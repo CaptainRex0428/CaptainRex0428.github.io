@@ -5,9 +5,10 @@ const locale = getLocaleFromUrl(Astro.url);
 const t = useTranslations(locale);
 
 const socials = [
-  { key: 'zhihu', href: 'https://www.zhihu.com/people/AJLoveChina' },
-  { key: 'xiaohongshu', href: '#' },
-  { key: 'bilibili', href: '#' },
+  { label: '图灵技术手记', href: 'https://www.zhihu.com/people/turing-digiart' },
+  { label: '图灵数字艺术', href: 'https://www.xiaohongshu.com/user/profile/697ed5bd00000000210136e2' },
+  { label: '图灵数字艺术技术手记', href: 'https://www.xiaohongshu.com/user/profile/6709d2da000000001d03100c' },
+  { label: '图灵数字艺术RestArt', href: 'https://space.bilibili.com/504030884' },
 ];
 ---
 
@@ -16,11 +17,17 @@ const socials = [
     <div class="footer-content">
       <div class="footer-brand">
         <span class="brand-name">CaptainRex</span>
-        <p class="brand-desc">{t.hero.subtitle}</p>
+        <div class="brand-tags">
+          <span class="brand-tag">游戏资深技术美术（TA）</span>
+          <span class="brand-tag">中国传媒大学数字艺术 MA</span>
+          <span class="brand-tag">腾讯数字艺术领军人才实验班讲师</span>
+          <span class="brand-tag">数字艺术技术讲师</span>
+          <span class="brand-tag">数字艺术理论讲师</span>
+        </div>
       </div>
 
       <div class="footer-social">
-        <h4 class="social-title">{t.social.zhihu}</h4>
+        <h4 class="social-title">社交平台</h4>
         <div class="social-links">
           {socials.map(s => (
             <a
@@ -29,7 +36,7 @@ const socials = [
               rel="noopener noreferrer"
               class="social-link"
             >
-              {t.social[s.key as keyof typeof t.social]}
+              {s.label}
             </a>
           ))}
         </div>
@@ -69,9 +76,15 @@ const socials = [
     color: var(--text-primary);
   }
 
-  .brand-desc {
-    margin-top: var(--space-2);
-    font-size: var(--text-sm);
+  .brand-tags {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    margin-top: var(--space-3);
+  }
+
+  .brand-tag {
+    font-size: var(--text-xs);
     color: var(--text-muted);
   }
 

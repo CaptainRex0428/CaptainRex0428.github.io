@@ -12,14 +12,14 @@ const t = useTranslations(locale);
   <section class="hero section">
     <div class="container">
       <div class="hero-content animate-slide-up">
-        <div class="hero-badge">
-          <span class="badge">3D / WebGL</span>
-        </div>
         <h1 class="hero-title">
           {t.hero.title} <span class="accent">CaptainRex</span>
         </h1>
-        <p class="hero-subtitle">{t.hero.subtitle}</p>
-        <p class="hero-desc">{t.hero.description}</p>
+        <div class="hero-tags">
+          {(Array.isArray(t.hero.subtitle) ? t.hero.subtitle : [t.hero.subtitle]).map((tag: string) => (
+            <span class="hero-tag">{tag}</span>
+          ))}
+        </div>
         <div class="hero-actions">
           <a href="/works" class="btn btn-primary">{t.hero.cta}</a>
           <a href="/blog" class="btn btn-secondary">阅读博客</a>
@@ -99,14 +99,14 @@ const t = useTranslations(locale);
         <h2 class="cta-title">想聊聊？</h2>
         <p class="cta-desc">可以在以下平台找到我</p>
         <div class="social-links">
-          <a href="https://www.zhihu.com/people/AJLoveChina" target="_blank" rel="noopener" class="social-btn">
+          <a href="https://www.zhihu.com/people/turing-digiart" target="_blank" rel="noopener" class="social-btn">
             知乎
           </a>
-          <a href="#" target="_blank" rel="noopener" class="social-btn">
+          <a href="https://www.xiaohongshu.com/user/profile/697ed5bd00000000210136e2" target="_blank" rel="noopener" class="social-btn">
             小红书
           </a>
-          <a href="#" target="_blank" rel="noopener" class="social-btn">
-            B站
+          <a href="https://space.bilibili.com/504030884" target="_blank" rel="noopener" class="social-btn">
+            图灵数字艺术RestArt
           </a>
         </div>
       </div>
@@ -131,9 +131,6 @@ const t = useTranslations(locale);
     align-items: center;
   }
 
-  .hero-badge {
-    margin-bottom: var(--space-4);
-  }
 
   .hero-title {
     font-size: clamp(2.5rem, 5vw, 4rem);
@@ -146,17 +143,22 @@ const t = useTranslations(locale);
     color: var(--accent);
   }
 
-  .hero-subtitle {
-    font-size: var(--text-lg);
-    color: var(--text-secondary);
-    margin-bottom: var(--space-4);
+  .hero-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin-bottom: var(--space-6);
   }
 
-  .hero-desc {
-    font-size: var(--text-base);
-    color: var(--text-muted);
-    max-width: 50ch;
-    margin-bottom: var(--space-8);
+  .hero-tag {
+    padding: var(--space-1) var(--space-3);
+    font-size: var(--text-sm);
+    font-weight: 500;
+    color: var(--text-secondary);
+    background: transparent;
+    border: 1px solid var(--bg-border);
+    border-radius: var(--radius-md);
+    box-shadow: 0 0 8px rgba(74, 74, 74, 0.3);
   }
 
   .hero-actions {

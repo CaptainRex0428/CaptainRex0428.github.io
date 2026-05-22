@@ -12,14 +12,14 @@ const t = useTranslations(locale);
   <section class="hero section">
     <div class="container">
       <div class="hero-content animate-slide-up">
-        <div class="hero-badge">
-          <span class="badge">3D / WebGL</span>
-        </div>
         <h1 class="hero-title">
           {t.hero.title} <span class="accent">CaptainRex</span>
         </h1>
-        <p class="hero-subtitle">{t.hero.subtitle}</p>
-        <p class="hero-desc">{t.hero.description}</p>
+        <div class="hero-tags">
+          {(Array.isArray(t.hero.subtitle) ? t.hero.subtitle : [t.hero.subtitle]).map((tag: string) => (
+            <span class="hero-tag">{tag}</span>
+          ))}
+        </div>
         <div class="hero-actions">
           <a href="/en/works" class="btn btn-primary">{t.hero.cta}</a>
           <a href="/en/blog" class="btn btn-secondary">Read Blog</a>
@@ -98,14 +98,14 @@ const t = useTranslations(locale);
         <h2 class="cta-title">Let's Connect</h2>
         <p class="cta-desc">Find me on these platforms</p>
         <div class="social-links">
-          <a href="https://www.zhihu.com/people/AJLoveChina" target="_blank" rel="noopener" class="social-btn">
+          <a href="https://www.zhihu.com/people/turing-digiart" target="_blank" rel="noopener" class="social-btn">
             Zhihu
           </a>
-          <a href="#" target="_blank" rel="noopener" class="social-btn">
+          <a href="https://www.xiaohongshu.com/user/profile/697ed5bd00000000210136e2" target="_blank" rel="noopener" class="social-btn">
             Xiaohongshu
           </a>
-          <a href="#" target="_blank" rel="noopener" class="social-btn">
-            Bilibili
+          <a href="https://space.bilibili.com/504030884" target="_blank" rel="noopener" class="social-btn">
+            图灵数字艺术RestArt
           </a>
         </div>
       </div>

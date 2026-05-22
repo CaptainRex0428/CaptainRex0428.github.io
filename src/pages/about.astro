@@ -20,37 +20,57 @@ const t = useTranslations(locale);
           <div class="skills-grid">
             <div class="skill-item">
               <span class="skill-icon">⚡</span>
-              <h3>{t.about.skillsList.frontend}</h3>
-              <p>React, Vue, TypeScript, WebGL</p>
+              <h3>{t.about.skillsList.ta}</h3>
+              <p>游戏 TA / 图形学</p>
+            </div>
+            <div class="skill-item">
+              <span class="skill-icon">🎮</span>
+              <h3>{t.about.skillsList.ue}</h3>
+              <p>UE5 / DirectX / C++</p>
             </div>
             <div class="skill-item">
               <span class="skill-icon">🎨</span>
               <h3>{t.about.skillsList.tools}</h3>
-              <p>Figma, Blender, VS Code</p>
+              <p>Blender / Houdini</p>
             </div>
             <div class="skill-item">
-              <span class="skill-icon">✨</span>
+              <span class="skill-icon">✍️</span>
               <h3>{t.about.skillsList.writing}</h3>
-              <p>技术文章、视频脚本</p>
+              <p>技术文章与出版</p>
             </div>
           </div>
         </div>
 
-        <div class="about-card card">
+        <div class="about-card card social-card">
           <h2 class="card-title">社交平台</h2>
-          <div class="social-list">
-            <a href="https://www.zhihu.com/people/AJLoveChina" target="_blank" rel="noopener" class="social-item">
-              <span class="social-name">知乎</span>
-              <span class="social-link">zhihu.com/AJLoveChina</span>
-            </a>
-            <a href="#" target="_blank" rel="noopener" class="social-item">
-              <span class="social-name">小红书</span>
-              <span class="social-link">小红书主页</span>
-            </a>
-            <a href="#" target="_blank" rel="noopener" class="social-item">
-              <span class="social-name">Bilibili</span>
-              <span class="social-link">B站主页</span>
-            </a>
+          <div class="social-buttons">
+            <div class="social-row">
+              <span class="social-label">知乎</span>
+              <div class="social-btns">
+                <a href="https://www.zhihu.com/people/turing-digiart" target="_blank" rel="noopener" class="social-btn zhihu">
+                  <span>图灵技术手记</span>
+                </a>
+              </div>
+            </div>
+            <div class="social-row">
+              <span class="social-label">小红书</span>
+              <div class="social-btns">
+                <a href="https://www.xiaohongshu.com/user/profile/697ed5bd00000000210136e2" target="_blank" rel="noopener" class="social-btn xhs">
+                  <span>图灵数字艺术</span>
+                </a>
+                <a href="https://www.xiaohongshu.com/user/profile/6709d2da000000001d03100c" target="_blank" rel="noopener" class="social-btn xhs">
+                  <span>图灵数字艺术技术手记</span>
+                </a>
+              </div>
+            </div>
+            <div class="social-row">
+              <span class="social-label">BiliBili</span>
+              <div class="social-btns">
+                <a href="https://space.bilibili.com/504030884" target="_blank" rel="noopener" class="social-btn bilibili">
+                  <span>图灵数字艺术RestArt</span>
+                </a>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -127,35 +147,82 @@ const t = useTranslations(locale);
     margin: 0;
   }
 
-  .social-list {
+  .social-buttons {
     display: flex;
     flex-direction: column;
-    gap: var(--space-4);
+    gap: var(--space-3);
   }
 
-  .social-item {
+  .social-row {
     display: flex;
-    flex-direction: column;
-    padding: var(--space-4);
-    background: var(--bg-base);
+    align-items: center;
+    gap: var(--space-3);
+  }
+
+  .social-label {
+    width: 60px;
+    font-size: var(--text-sm);
+    font-weight: 500;
+    color: var(--text-muted);
+    flex-shrink: 0;
+  }
+
+  .social-btns {
+    display: flex;
+    gap: var(--space-3);
+    flex: 1;
+  }
+
+  .social-row .social-btn {
+    flex: 1;
+    max-width: none;
+    justify-content: center;
+  }
+
+  .social-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-2) var(--space-4);
+    min-width: 140px;
+    font-size: var(--text-sm);
+    font-weight: 500;
+    color: var(--text-secondary);
+    background: transparent;
+    border: 1px solid var(--bg-border);
     border-radius: var(--radius-md);
     text-decoration: none;
     transition: all var(--transition-base);
+    box-shadow: 0 0 8px rgba(74, 74, 74, 0.2);
   }
 
-  .social-item:hover {
-    background: var(--accent-glow);
-    transform: translateX(4px);
+  .social-btn.xhs {
+    font-size: var(--text-xs);
+    white-space: normal;
+    text-align: center;
+    line-height: 1.4;
   }
 
-  .social-name {
-    font-weight: 600;
+  .social-btn:hover {
     color: var(--text-primary);
+    border-color: var(--accent);
+    background: var(--accent-glow);
+    box-shadow: 0 0 12px var(--accent-glow);
   }
 
-  .social-link {
-    font-size: var(--text-sm);
-    color: var(--accent);
+  .social-btn.xhs:hover {
+    border-color: #ff6b6b;
+    background: rgba(255, 107, 107, 0.1);
+  }
+
+  .social-btn.zhihu:hover {
+    border-color: #0084ff;
+    background: rgba(0, 132, 255, 0.1);
+  }
+
+  .social-btn.bilibili:hover {
+    border-color: #00a1d6;
+    background: rgba(0, 161, 214, 0.1);
   }
 
   @media (max-width: 1024px) {

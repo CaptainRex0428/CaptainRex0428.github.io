@@ -8,8 +8,14 @@
   },
   "hero": {
     "title": "Hi, I'm",
-    "subtitle": "Full-stack Developer / 3D Enthusiast / Tech Writer",
-    "description": "Focused on frontend development and computer graphics, passionate about turning ideas into interactive digital experiences.",
+    "subtitle": [
+      "Senior Technical Artist (TA)",
+      "MA Digital Arts, CUC",
+      "Lecturer, Tencent Digital Arts Program",
+      "Digital Arts Technology Instructor",
+      "Digital Arts Theory Instructor"
+    ],
+    "description": "",
     "cta": "View Works"
   },
   "about": {
