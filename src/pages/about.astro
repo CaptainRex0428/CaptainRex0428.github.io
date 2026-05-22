@@ -1,0 +1,172 @@
+---
+import Base from '@/layouts/Base.astro';
+import { useTranslations, getLocaleFromUrl } from '@/i18n';
+
+const locale = getLocaleFromUrl(Astro.url);
+const t = useTranslations(locale);
+---
+
+<Base title={t.about.title}>
+  <section class="about section">
+    <div class="container">
+      <div class="about-header animate-slide-up">
+        <h1 class="about-title">{t.about.title}</h1>
+        <p class="about-intro">{t.about.intro}</p>
+      </div>
+
+      <div class="about-grid">
+        <div class="about-card card">
+          <h2 class="card-title">{t.about.skills}</h2>
+          <div class="skills-grid">
+            <div class="skill-item">
+              <span class="skill-icon">⚡</span>
+              <h3>{t.about.skillsList.frontend}</h3>
+              <p>React, Vue, TypeScript, WebGL</p>
+            </div>
+            <div class="skill-item">
+              <span class="skill-icon">🎨</span>
+              <h3>{t.about.skillsList.tools}</h3>
+              <p>Figma, Blender, VS Code</p>
+            </div>
+            <div class="skill-item">
+              <span class="skill-icon">✨</span>
+              <h3>{t.about.skillsList.writing}</h3>
+              <p>技术文章、视频脚本</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="about-card card">
+          <h2 class="card-title">社交平台</h2>
+          <div class="social-list">
+            <a href="https://www.zhihu.com/people/AJLoveChina" target="_blank" rel="noopener" class="social-item">
+              <span class="social-name">知乎</span>
+              <span class="social-link">zhihu.com/AJLoveChina</span>
+            </a>
+            <a href="#" target="_blank" rel="noopener" class="social-item">
+              <span class="social-name">小红书</span>
+              <span class="social-link">小红书主页</span>
+            </a>
+            <a href="#" target="_blank" rel="noopener" class="social-item">
+              <span class="social-name">Bilibili</span>
+              <span class="social-link">B站主页</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .about-header {
+    margin-bottom: var(--space-12);
+    max-width: 700px;
+  }
+
+  .about-title {
+    font-size: var(--text-4xl);
+    font-weight: 700;
+    margin-bottom: var(--space-4);
+  }
+
+  .about-intro {
+    font-size: var(--text-lg);
+    color: var(--text-secondary);
+    line-height: 1.8;
+  }
+
+  .about-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: var(--space-6);
+  }
+
+  .about-card {
+    padding: var(--space-8);
+  }
+
+  .card-title {
+    font-size: var(--text-xl);
+    margin-bottom: var(--space-6);
+  }
+
+  .skills-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-6);
+  }
+
+  .skill-item {
+    text-align: center;
+    padding: var(--space-4);
+    background: var(--bg-base);
+    border-radius: var(--radius-lg);
+    transition: all var(--transition-base);
+  }
+
+  .skill-item:hover {
+    background: var(--accent-glow);
+    transform: translateY(-2px);
+  }
+
+  .skill-icon {
+    font-size: var(--text-2xl);
+    display: block;
+    margin-bottom: var(--space-3);
+  }
+
+  .skill-item h3 {
+    font-size: var(--text-base);
+    margin-bottom: var(--space-2);
+  }
+
+  .skill-item p {
+    font-size: var(--text-sm);
+    color: var(--text-muted);
+    margin: 0;
+  }
+
+  .social-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+
+  .social-item {
+    display: flex;
+    flex-direction: column;
+    padding: var(--space-4);
+    background: var(--bg-base);
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    transition: all var(--transition-base);
+  }
+
+  .social-item:hover {
+    background: var(--accent-glow);
+    transform: translateX(4px);
+  }
+
+  .social-name {
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .social-link {
+    font-size: var(--text-sm);
+    color: var(--accent);
+  }
+
+  @media (max-width: 1024px) {
+    .about-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .skills-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

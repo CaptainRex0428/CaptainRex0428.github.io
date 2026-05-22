@@ -1,0 +1,129 @@
+---
+export interface Props {
+  href?: string;
+  title?: string;
+  description?: string;
+  cover?: string;
+  badge?: string;
+  badgeText?: string;
+  date?: string;
+}
+
+const { href, title, description, cover, badge, badgeText, date } = Astro.props;
+---
+
+{href ? (
+  <a href={href} class="card-link">
+    <article class="card">
+      {cover && (
+        <div class="card-cover">
+          <img src={cover} alt={title || ''} loading="lazy" />
+        </div>
+      )}
+      <div class="card-content">
+        {badge && <span class="badge">{badgeText || badge}</span>}
+        {title && <h3 class="card-title">{title}</h3>}
+        {description && <p class="card-desc">{description}</p>}
+        {date && <time class="card-date">{date}</time>}
+        <span class="card-arrow">&rarr;</span>
+      </div>
+    </article>
+  </a>
+) : (
+  <article class="card">
+    {cover && (
+      <div class="card-cover">
+        <img src={cover} alt={title || ''} loading="lazy" />
+      </div>
+    )}
+    <div class="card-content">
+      {badge && <span class="badge">{badgeText || badge}</span>}
+      {title && <h3 class="card-title">{title}</h3>}
+      {description && <p class="card-desc">{description}</p>}
+      {date && <time class="card-date">{date}</time>}
+    </div>
+  </article>
+)}
+
+<style>
+  .card-link {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .card {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .card-cover {
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    border-radius: var(--radius-lg);
+    margin-bottom: var(--space-4);
+    background: var(--bg-base);
+  }
+
+  .card-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform var(--transition-slow);
+  }
+
+  .card:hover .card-cover img {
+    transform: scale(1.05);
+  }
+
+  .card-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .badge {
+    align-self: flex-start;
+    margin-bottom: var(--space-3);
+  }
+
+  .card-title {
+    font-size: var(--text-lg);
+    font-weight: 600;
+    margin-bottom: var(--space-2);
+    color: var(--text-primary);
+    transition: color var(--transition-fast);
+  }
+
+  .card:hover .card-title {
+    color: var(--accent);
+  }
+
+  .card-desc {
+    flex: 1;
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    margin-bottom: var(--space-4);
+    line-height: 1.6;
+  }
+
+  .card-date {
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+    margin-bottom: var(--space-2);
+  }
+
+  .card-arrow {
+    align-self: flex-end;
+    font-size: var(--text-lg);
+    color: var(--text-muted);
+    transition: all var(--transition-fast);
+  }
+
+  .card:hover .card-arrow {
+    color: var(--accent);
+    transform: translateX(4px);
+  }
+</style>

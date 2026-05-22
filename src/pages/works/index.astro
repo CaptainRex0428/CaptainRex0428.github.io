@@ -1,0 +1,92 @@
+---
+import Base from '@/layouts/Base.astro';
+import Card from '@/components/Card.astro';
+import { useTranslations, getLocaleFromUrl } from '@/i18n';
+
+const locale = getLocaleFromUrl(Astro.url);
+const t = useTranslations(locale);
+
+const categories = ['frontend', '3d', 'design-tools', 'other'];
+---
+
+<Base title={t.works.title}>
+  <section class="works-page section">
+    <div class="container">
+      <div class="page-header animate-slide-up">
+        <h1 class="page-title">{t.works.title}</h1>
+        <p class="page-subtitle">{t.works.subtitle}</p>
+      </div>
+
+      <div class="filters">
+        <a href="/works" class="filter active">全部</a>
+        {categories.map(cat => (
+          <a href={`/works/${cat}`} class="filter">{t.categories[cat as keyof typeof t.categories]}</a>
+        ))}
+      </div>
+
+      <div class="grid grid-3">
+        <Card
+          href="/works/frontend"
+          badge="frontend"
+          title="WebGL 粒子系统"
+          description="使用 Three.js 构建的交互式粒子效果，支持自定义参数和实时渲染。"
+        />
+        <Card
+          href="/works/3d"
+          badge="3d"
+          title="3D 产品展示台"
+          description="基于 WebGL 的 3D 产品展示方案，支持多角度查看和材质切换。"
+        />
+        <Card
+          href="/works/design-tools"
+          badge="design-tools"
+          title="设计工具合集"
+          description="一系列提升设计效率的小工具，包含颜色转换、渐变生成等功能。"
+        />
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .page-header {
+    margin-bottom: var(--space-12);
+  }
+
+  .page-title {
+    font-size: var(--text-4xl);
+    font-weight: 700;
+    margin-bottom: var(--space-3);
+  }
+
+  .page-subtitle {
+    font-size: var(--text-lg);
+    color: var(--text-secondary);
+  }
+
+  .filters {
+    display: flex;
+    gap: var(--space-3);
+    margin-bottom: var(--space-8);
+    flex-wrap: wrap;
+  }
+
+  .filter {
+    padding: var(--space-2) var(--space-4);
+    font-size: var(--text-sm);
+    font-weight: 500;
+    color: var(--text-secondary);
+    background: var(--bg-elevated);
+    border: 1px solid var(--bg-border);
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    transition: all var(--transition-fast);
+  }
+
+  .filter:hover,
+  .filter.active {
+    color: var(--accent);
+    border-color: var(--accent);
+    background: var(--accent-glow);
+  }
+</style>

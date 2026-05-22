@@ -1,0 +1,62 @@
+{
+  "nav": {
+    "home": "首页",
+    "about": "关于",
+    "works": "作品",
+    "blog": "博客",
+    "contact": "联系"
+  },
+  "hero": {
+    "title": "你好，我是",
+    "subtitle": "全栈开发者 / 3D 爱好者 / 技术写作者",
+    "description": "专注于前端开发和图形学的技术探索，热爱将创意转化为可交互的数字作品。",
+    "cta": "查看作品"
+  },
+  "about": {
+    "title": "关于我",
+    "intro": "一名热爱技术的前端开发者，对图形学和实时渲染充满兴趣。",
+    "skills": "技术栈",
+    "skillsList": {
+      "frontend": "前端开发",
+      "3d": "3D / WebGL",
+      "tools": "效率工具",
+      "writing": "技术写作"
+    }
+  },
+  "works": {
+    "title": "作品集",
+    "subtitle": "一些个人项目和技术实践",
+    "all": "全部",
+    "empty": "暂无作品",
+    "view": "查看详情"
+  },
+  "blog": {
+    "title": "博客",
+    "subtitle": "技术文章和学习笔记",
+    "all": "全部",
+    "empty": "暂无文章",
+    "readMore": "阅读更多"
+  },
+  "categories": {
+    "frontend": "前端",
+    "3d": "3D",
+    "design-tools": "设计工具",
+    "other": "其他",
+    "graphics": "图形学",
+    "tools": "工具",
+    "essay": "随笔"
+  },
+  "footer": {
+    "copyright": "版权所有",
+    "madeWith": "用心制作"
+  },
+  "social": {
+    "zhihu": "知乎",
+    "xiaohongshu": "小红书",
+    "bilibili": "Bilibili"
+  },
+  "lang": {
+    "switchToEn": "English",
+    "switchToZh": "中文"
+  }
+}

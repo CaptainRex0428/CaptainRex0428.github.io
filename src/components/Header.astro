@@ -1,0 +1,153 @@
+---
+import { getLocaleFromUrl, useTranslations, getLocalizedPath, getAlternateLocale } from '@/i18n';
+
+const locale = getLocaleFromUrl(Astro.url);
+const t = useTranslations(locale);
+const alternateLocale = getAlternateLocale(locale);
+
+const navItems = [
+  { key: 'home', href: getLocalizedPath('/', locale) },
+  { key: 'about', href: getLocalizedPath('/about', locale) },
+  { key: 'works', href: getLocalizedPath('/works', locale) },
+  { key: 'blog', href: getLocalizedPath('/blog', locale) },
+];
+---
+
+<header class="header">
+  <div class="container">
+    <nav class="nav">
+      <a href={getLocalizedPath('/', locale)} class="logo">
+        <span class="logo-text">CaptainRex</span>
+      </a>
+
+      <ul class="nav-links">
+        {navItems.map(item => (
+          <li>
+            <a href={item.href} class="nav-link">
+              {t.nav[item.key as keyof typeof t.nav]}
+            </a>
+          </li>
+        ))}
+      </ul>
+
+      <div class="nav-actions">
+        <a
+          href={getLocalizedPath(Astro.url.pathname, alternateLocale)}
+          class="lang-switch"
+          aria-label={alternateLocale === 'en' ? 'Switch to English' : '切换到中文'}
+        >
+          {alternateLocale === 'en' ? 'EN' : '中'}
+        </a>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<style>
+  .header {
+    position: sticky;
+    top: 0;
+    z-index: var(--z-sticky);
+    background: rgba(10, 10, 15, 0.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--bg-border);
+  }
+
+  .nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 72px;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    text-decoration: none;
+  }
+
+  .logo-text {
+    font-size: var(--text-xl);
+    font-weight: 700;
+    color: var(--text-primary);
+    transition: color var(--transition-fast);
+  }
+
+  .logo:hover .logo-text {
+    color: var(--accent);
+  }
+
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: var(--space-8);
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .nav-link {
+    position: relative;
+    font-size: var(--text-sm);
+    font-weight: 500;
+    color: var(--text-secondary);
+    text-decoration: none;
+    padding: var(--space-2) 0;
+    transition: color var(--transition-fast);
+  }
+
+  .nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: var(--accent);
+    transition: width var(--transition-base);
+  }
+
+  .nav-link:hover {
+    color: var(--text-primary);
+  }
+
+  .nav-link:hover::after {
+    width: 100%;
+  }
+
+  .nav-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+  }
+
+  .lang-switch {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--text-secondary);
+    background: var(--bg-elevated);
+    border: 1px solid var(--bg-border);
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    transition: all var(--transition-fast);
+  }
+
+  .lang-switch:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+    background: var(--accent-glow);
+  }
+
+  @media (max-width: 768px) {
+    .nav-links {
+      display: none;
+    }
+  }
+</style>

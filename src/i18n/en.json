@@ -1,0 +1,62 @@
+{
+  "nav": {
+    "home": "Home",
+    "about": "About",
+    "works": "Works",
+    "blog": "Blog",
+    "contact": "Contact"
+  },
+  "hero": {
+    "title": "Hi, I'm",
+    "subtitle": "Full-stack Developer / 3D Enthusiast / Tech Writer",
+    "description": "Focused on frontend development and computer graphics, passionate about turning ideas into interactive digital experiences.",
+    "cta": "View Works"
+  },
+  "about": {
+    "title": "About Me",
+    "intro": "A frontend developer who loves computer graphics and real-time rendering.",
+    "skills": "Skills",
+    "skillsList": {
+      "frontend": "Frontend",
+      "3d": "3D / WebGL",
+      "tools": "Dev Tools",
+      "writing": "Technical Writing"
+    }
+  },
+  "works": {
+    "title": "Works",
+    "subtitle": "Personal projects and technical experiments",
+    "all": "All",
+    "empty": "No works yet",
+    "view": "View Details"
+  },
+  "blog": {
+    "title": "Blog",
+    "subtitle": "Technical articles and learning notes",
+    "all": "All",
+    "empty": "No articles yet",
+    "readMore": "Read More"
+  },
+  "categories": {
+    "frontend": "Frontend",
+    "3d": "3D",
+    "design-tools": "Design Tools",
+    "other": "Other",
+    "graphics": "Graphics",
+    "tools": "Tools",
+    "essay": "Essay"
+  },
+  "footer": {
+    "copyright": "All rights reserved",
+    "madeWith": "Made with care"
+  },
+  "social": {
+    "zhihu": "Zhihu",
+    "xiaohongshu": "Xiaohongshu",
+    "bilibili": "Bilibili"
+  },
+  "lang": {
+    "switchToEn": "English",
+    "switchToZh": "中文"
+  }
+}
