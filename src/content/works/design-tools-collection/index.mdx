@@ -1,0 +1,219 @@
+---
+title: "设计工具合集"
+description: "一系列提升设计效率的小工具，包含颜色转换、渐变生成等功能。"
+category: design-tools
+tags: ['设计工具', '颜色', '效率工具', '前端']
+date: 2026-01-05
+featured: true
+order: 3
+---
+
+## 项目简介
+
+一套面向设计师和开发者的实用工具集合，涵盖日常工作中常用的设计辅助功能。
+
+## 工具列表
+
+### 1. 颜色转换器
+
+支持多种颜色格式之间的转换：
+- HEX ↔ RGB ↔ HSL
+- 支持透明度（Alpha）
+- 实时预览
+- 一键复制结果
+
+### 2. 渐变生��器
+
+创建 CSS 渐变效果：
+- 线性渐变 / 径向渐变
+- 多色标支持
+- 角度调节
+- 代码导出
+
+### 3. 间距计算器
+
+快速计算设计中的间距：
+- 像素值转换
+- 响应式断点计算
+- 网格系统生成
+
+### 4. 字体预览
+
+实时预览字体效果：
+- 支持系统字体
+- 自定义文本输入
+- 字号、行高调节
+- 字重测试
+
+### 5. 阴影生成器
+
+可视化创建 CSS box-shadow：
+- 多层阴影支持
+- 颜色、模糊调节
+- 代码复制
+
+### 6. 圆角工具
+
+预览和生成 border-radius：
+- 单独控制四个角
+- 椭圆效果
+- 不规则圆角
+
+## 技术实现
+
+### 前端框架
+
+- **React**：组件化开发
+- **TypeScript**：类型安全
+- **Tailwind CSS**：快速样式开发
+
+### 状态管理
+
+```typescript
+interface ColorState {
+  hex: string;
+  rgb: { r: number; g: number; b: number };
+  hsl: { h: number; s: number; l: number };
+  alpha: number;
+}
+
+const [color, setColor] = useState<ColorState>({
+  hex: '#FF8C00',
+  rgb: { r: 255, g: 140, b: 0 },
+  hsl: { h: 33, s: 100, l: 50 },
+  alpha: 1
+});
+```
+
+### 颜色转换算法
+
+```javascript
+function hexToRgb(hex) {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result ? {
+    r: parseInt(result[1], 16),
+    g: parseInt(result[2], 16),
+    b: parseInt(result[3], 16)
+  } : null;
+}
+
+function rgbToHsl(r, g, b) {
+  r /= 255; g /= 255; b /= 255;
+  const max = Math.max(r, g, b), min = Math.min(r, g, b);
+  let h, s, l = (max + min) / 2;
+
+  if (max === min) {
+    h = s = 0;
+  } else {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    switch (max) {
+      case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+      case g: h = ((b - r) / d + 2) / 6; break;
+      case b: h = ((r - g) / d + 4) / 6; break;
+    }
+  }
+  return { h: h * 360, s: s * 100, l: l * 100 };
+}
+```
+
+### 本地存储
+
+使用 localStorage 保存用户偏好：
+
+```javascript
+function savePreferences(prefs) {
+  localStorage.setItem('design-tools-prefs', JSON.stringify(prefs));
+}
+
+function loadPreferences() {
+  const saved = localStorage.getItem('design-tools-prefs');
+  return saved ? JSON.parse(saved) : null;
+}
+```
+
+## 设计理念
+
+### 界面简洁
+
+去除不必要的干扰元素，专注于工具本身。
+
+### 响应式布局
+
+适配各种设备屏幕，随时可用。
+
+### 快捷操作
+
+支持键盘快捷键，提高效率：
+- `Ctrl+C`：复制结果
+- `Ctrl+V`：粘贴颜色值
+- `Esc`：关闭面板
+
+### 导出功能
+
+支持多种格式导出：
+- CSS 代码
+- JSON 数据
+- 图片导出
+
+## 性能优化
+
+### 防抖处理
+
+```javascript
+import { debounce } from 'lodash-es';
+
+const handleColorChange = debounce((value) => {
+  updateColor(value);
+}, 100);
+```
+
+### 虚拟滚动
+
+对于大量数据，使用虚拟滚动优化性能。
+
+### 代码分割
+
+```javascript
+const ColorConverter = lazy(() => import('./ColorConverter'));
+const GradientGenerator = lazy(() => import('./GradientGenerator'));
+```
+
+## 用户体验
+
+### 实时反馈
+
+所有操作即时响应，无需等待。
+
+### 错误处理
+
+友好的错误提示，避免用户困惑。
+
+### 快捷提示
+
+内置工具使用说明，降低学习成本。
+
+## 未来计划
+
+- [ ] 更多工具类型
+- [ ] 云端同步功能
+- [ ] 团队协作功能
+- [ ] API 接口提供
+- [ ] 浏览器插件版本
+
+## 技术债务
+
+1. 部分工具需要更好的移动端适配
+2. 需要添加单元测试
+3. 优化首屏加载性能
+
+## 资源链接
+
+- [在线体验](#)
+- [源代码](#)
+
+---
+
+**项目状态**：持续更新中
+**最后更新**：2026-01-05
+**作者**：CaptainRex

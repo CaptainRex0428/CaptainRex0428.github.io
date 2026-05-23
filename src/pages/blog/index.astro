@@ -1,12 +1,24 @@
 ---
 import Base from '@/layouts/Base.astro';
 import Card from '@/components/Card.astro';
+import { getCollection } from 'astro:content';
 import { useTranslations, getLocaleFromUrl } from '@/i18n';
 
 const locale = getLocaleFromUrl(Astro.url);
 const t = useTranslations(locale);
 
+const allPosts = await getCollection('blog');
+const publishedPosts = allPosts
+  .filter(post => post.data.published)
+  .sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+
 const categories = ['frontend', 'graphics', 'tools', 'essay'];
+const categoryNames: Record<string, string> = {
+  frontend: '全部',
+  graphics: '图形学',
+  tools: '工具',
+  essay: '随笔'
+};
 ---
 
 <Base title={t.blog.title}>
@@ -24,36 +36,23 @@ const categories = ['frontend', 'graphics', 'tools', 'essay'];
         ))}
       </div>
 
-      <div class="grid grid-2">
-        <Card
-          href="/blog/frontend"
-          badge="frontend"
-          title="Three.js 进阶：性能优化实战"
-          description="深入探讨 Three.js 项目中的性能瓶颈及优化策略，包括几何体合并、纹理压缩等技术。"
-          date="2026-01-15"
-        />
-        <Card
-          href="/blog/graphics"
-          badge="graphics"
-          title="WebGL 着色器入门指南"
-          description="从零开始学习 GLSL 着色器编程，理解顶点着色器和片元着色器的工作原理。"
-          date="2026-01-08"
-        />
-        <Card
-          href="/blog/tools"
-          badge="tools"
-          title="VS Code 插件推荐：提升前端开发效率"
-          description="分享几款我常用的高效 VS Code 插件，从代码补全到调试工具全覆盖。"
-          date="2025-12-20"
-        />
-        <Card
-          href="/blog/essay"
-          badge="essay"
-          title="2025 年前端技术趋势回顾"
-          description="回顾这一年前端领域的重要变化，聊聊我对这些趋势的看法。"
-          date="2025-12-28"
-        />
-      </div>
+      {publishedPosts.length > 0 ? (
+        <div class="grid grid-2">
+          {publishedPosts.map(post => (
+            <Card
+              href={`/blog/${post.slug}`}
+              badge={post.data.category}
+              title={post.data.title}
+              description={post.data.description}
+              date={post.data.date}
+            />
+          ))}
+        </div>
+      ) : (
+        <div class="empty-state">
+          <p>{t.blog.empty}</p>
+        </div>
+      )}
     </div>
   </section>
 </Base>

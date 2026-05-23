@@ -1,0 +1,293 @@
+---
+import Base from '@/layouts/Base.astro';
+import { getCollection } from 'astro:content';
+import { useTranslations, getLocaleFromUrl } from '@/i18n';
+
+export async function getStaticPaths() {
+  const works = await getCollection('works');
+  return works.map(work => ({
+    params: { slug: work.slug },
+    props: { work },
+  }));
+}
+
+const { work } = Astro.props;
+const { Content } = await work.render();
+
+const locale = getLocaleFromUrl(Astro.url);
+const t = useTranslations(locale);
+
+const categories = {
+  frontend: '前端项目',
+  '3d': '3D 作品',
+  'design-tools': '设计工具',
+  other: '其他'
+};
+---
+
+<Base title={work.data.title}>
+  <article class="work-post">
+    <header class="work-header">
+      <div class="container">
+        <div class="work-meta">
+          <span class="work-category">{categories[work.data.category]}</span>
+          {work.data.featured && (
+            <span class="work-featured">⭐ 精选</span>
+          )}
+          {work.data.date && (
+            <time class="work-date">
+              {work.data.date.toLocaleDateString('zh-CN')}
+            </time>
+          )}
+        </div>
+        <h1 class="work-title">{work.data.title}</h1>
+        <p class="work-description">{work.data.description}</p>
+
+        {work.data.tags.length > 0 && (
+          <div class="work-tags">
+            {work.data.tags.map(tag => (
+              <span class="tag">#{tag}</span>
+            ))}
+          </div>
+        )}
+      </div>
+    </header>
+
+    {work.data.heroImage && (
+      <div class="work-hero">
+        <div class="container">
+          <img
+            src={work.data.heroImage}
+            alt={work.data.title}
+            class="hero-image"
+          />
+        </div>
+      </div>
+    )}
+
+    <div class="work-content">
+      <div class="container">
+        <div class="prose">
+          <Content />
+        </div>
+      </div>
+    </div>
+
+    <footer class="work-footer">
+      <div class="container">
+        <div class="work-navigation">
+          <a href={`/${locale === 'en' ? 'en/' : ''}works`} class="back-link">
+            ← 返回作品列表
+          </a>
+        </div>
+      </div>
+    </footer>
+  </article>
+</Base>
+
+<style>
+  .work-post {
+    min-height: 100vh;
+    padding-top: var(--space-8);
+  }
+
+  .work-header {
+    margin-bottom: var(--space-8);
+    padding-bottom: var(--space-8);
+    border-bottom: 1px solid var(--bg-border);
+  }
+
+  .work-meta {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    margin-bottom: var(--space-4);
+    font-size: var(--text-sm);
+    flex-wrap: wrap;
+  }
+
+  .work-category {
+    padding: var(--space-1) var(--space-3);
+    background: var(--accent-glow);
+    color: var(--accent);
+    border-radius: var(--radius-sm);
+    font-weight: 500;
+  }
+
+  .work-featured {
+    padding: var(--space-1) var(--space-3);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: var(--radius-sm);
+    font-weight: 500;
+  }
+
+  .work-date {
+    color: var(--text-secondary);
+  }
+
+  .work-title {
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: var(--space-4);
+    color: var(--text-primary);
+  }
+
+  .work-description {
+    font-size: var(--text-lg);
+    color: var(--text-secondary);
+    margin-bottom: var(--space-6);
+    line-height: 1.6;
+  }
+
+  .work-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  .tag {
+    padding: var(--space-1) var(--space-3);
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    background: var(--bg-base);
+    border: 1px solid var(--bg-border);
+    border-radius: var(--radius-sm);
+  }
+
+  .work-hero {
+    margin-bottom: var(--space-12);
+  }
+
+  .hero-image {
+    width: 100%;
+    height: auto;
+    max-height: 600px;
+    object-fit: cover;
+    border-radius: var(--radius-lg);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  }
+
+  .work-content {
+    margin-bottom: var(--space-16);
+  }
+
+  .prose {
+    max-width: 65ch;
+    margin: 0 auto;
+  }
+
+  .prose :global(h2) {
+    font-size: var(--text-2xl);
+    font-weight: 600;
+    margin-top: var(--space-12);
+    margin-bottom: var(--space-4);
+    color: var(--text-primary);
+  }
+
+  .prose :global(h3) {
+    font-size: var(--text-xl);
+    font-weight: 600;
+    margin-top: var(--space-8);
+    margin-bottom: var(--space-3);
+    color: var(--text-primary);
+  }
+
+  .prose :global(p) {
+    font-size: var(--text-base);
+    line-height: 1.8;
+    margin-bottom: var(--space-6);
+    color: var(--text-secondary);
+  }
+
+  .prose :global(code) {
+    padding: 0.2em 0.4em;
+    font-size: 0.9em;
+    background: var(--bg-elevated);
+    border: 1px solid var(--bg-border);
+    border-radius: var(--radius-sm);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .prose :global(pre) {
+    padding: var(--space-4);
+    margin-bottom: var(--space-6);
+    overflow-x: auto;
+    background: var(--bg-elevated);
+    border: 1px solid var(--bg-border);
+    border-radius: var(--radius-md);
+  }
+
+  .prose :global(pre code) {
+    padding: 0;
+    background: transparent;
+    border: none;
+  }
+
+  .prose :global(img) {
+    width: 100%;
+    height: auto;
+    margin: var(--space-8) 0;
+    border-radius: var(--radius-md);
+  }
+
+  .prose :global(ul),
+  .prose :global(ol) {
+    margin-bottom: var(--space-6);
+    padding-left: var(--space-6);
+    color: var(--text-secondary);
+  }
+
+  .prose :global(li) {
+    margin-bottom: var(--space-2);
+    line-height: 1.6;
+  }
+
+  .prose :global(blockquote) {
+    padding: var(--space-4) var(--space-6);
+    margin-bottom: var(--space-6);
+    border-left: 4px solid var(--accent);
+    background: var(--accent-glow);
+    color: var(--text-secondary);
+  }
+
+  .work-footer {
+    padding-top: var(--space-8);
+    border-top: 1px solid var(--bg-border);
+  }
+
+  .work-navigation {
+    display: flex;
+    justify-content: center;
+  }
+
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-6);
+    font-size: var(--text-base);
+    color: var(--text-secondary);
+    text-decoration: none;
+    border: 1px solid var(--bg-border);
+    border-radius: var(--radius-md);
+    transition: all var(--transition-fast);
+  }
+
+  .back-link:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--accent-glow);
+  }
+
+  @media (max-width: 768px) {
+    .work-title {
+      font-size: var(--text-2xl);
+    }
+
+    .prose {
+      max-width: 100%;
+    }
+  }
+</style>

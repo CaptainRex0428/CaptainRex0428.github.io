@@ -1,0 +1,100 @@
+---
+title: "WebGL 着色器入门指南"
+description: "从零开始学习 GLSL 着色器编程，理解顶点着色器和片元着色器的工作原理。"
+category: graphics
+tags: ['WebGL', 'GLSL', '着色器', '图形学']
+date: 2026-01-08
+readTime: 10
+---
+
+## 前言
+
+着色器（Shader）是运行在 GPU 上的小程序，它们决定了 3D 场景中每个顶点和像素的最终显示效果。学习着色器编程是掌握图形编程的关键一步。
+
+## 什么是着色器？
+
+在 WebGL 中，主���有两种着色器：
+
+### 顶点着色器（Vertex Shader）
+处理每个顶点的位置、法线、纹理坐标等属性。
+
+### 片元着色器（Fragment Shader）
+计算每个像素的最终颜色。
+
+## GLSL 基础语法
+
+GLSL（OpenGL Shading Language）是一种类似 C 语言的着色器语言。
+
+### 变量类型
+
+```glsl
+// 基础类型
+float x = 1.0;
+int y = 2;
+vec3 color = vec3(1.0, 0.5, 0.0);
+
+// 特殊变量
+attribute vec3 position;  // 顶点属性
+varying vec3 vColor;      // 传递给片元着色器
+uniform float time;       // 全局变量
+```
+
+## 第一个着色器程序
+
+下面是一个简单的顶点着色器示例：
+
+```glsl
+attribute vec3 position;
+
+void main() {
+  gl_Position = vec4(position, 1.0);
+}
+```
+
+对应的片元着色器：
+
+```glsl
+precision mediump float;
+
+void main() {
+  gl_FragColor = vec4(1.0, 0.5, 0.0, 1.0); // 橙色
+}
+```
+
+## 实际应用
+
+### 创建渐变效果
+
+```glsl
+#ifdef GL_ES
+precision mediump float;
+#endif
+
+uniform float u_time;
+uniform vec2 u_resolution;
+
+void main() {
+  vec2 st = gl_FragCoord.xy / u_resolution.xy;
+  
+  // 创建随时间变化的渐变
+  vec3 color = vec3(st.x, st.y, abs(sin(u_time)));
+  
+  gl_FragColor = vec4(color, 1.0);
+}
+```
+
+## 性能优化建议
+
+1. **避免复杂计算**：在片元着色器中尽量减少计算量
+2. **使用查找表**：对于复杂的数学函数，可以预计算
+3. **合理使用精度**：移动端使用 `mediump`，桌面端使用 `highp`
+
+## 总结
+
+WebGL 着色器编程虽然有一定的学习曲线，但掌握后能够创造出令人惊叹的视觉效果。建议从简单的例子开始，逐步深入理解。
+
+## 参考资料
+
+- [WebGL Fundamentals](https://webglfundamentals.org/)
+- [The Book of Shaders](https://thebookofshaders.com/)
+- [Khronos WebGL Specification](https://www.khronos.org/webgl/)

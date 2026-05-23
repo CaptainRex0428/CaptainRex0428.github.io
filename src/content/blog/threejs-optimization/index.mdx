@@ -1,0 +1,183 @@
+---
+title: "Three.js 进阶：性能优化实战"
+description: "深入探讨 Three.js 项目中的性能瓶颈及优化策略，包括几何体合并、纹理压缩等技术。"
+category: frontend
+tags: ['Three.js', '性能优化', 'WebGL', '3D']
+date: 2026-01-15
+readTime: 12
+---
+
+## 前言
+
+在 Three.js 项目开发中，随着场景复杂度的增加，性能问题往往会成为瓶颈。本文将分享几个实用的性能优化技巧。
+
+## 1. 几何体优化
+
+### 几何体合并
+
+当场景中有大量相同材质的物体时，应该合并几何体以减少 draw call：
+
+```javascript
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils';
+
+const geometries = [];
+for (let i = 0; i < 100; i++) {
+  const geometry = new THREE.BoxGeometry(1, 1, 1);
+  geometry.translate(
+    Math.random() * 10 - 5,
+    Math.random() * 10 - 5,
+    Math.random() * 10 - 5
+  );
+  geometries.push(geometry);
+}
+
+const mergedGeometry = mergeGeometries(geometries);
+const mesh = new THREE.Mesh(mergedGeometry, material);
+scene.add(mesh);
+```
+
+### 实例化渲染
+
+对于相同几何体的多次渲染，使用 InstancedMesh：
+
+```javascript
+const geometry = new THREE.BoxGeometry(1, 1, 1);
+const material = new THREE.MeshLambertMaterial({ color: 0x00ff00 });
+const count = 1000;
+const mesh = new THREE.InstancedMesh(geometry, material, count);
+
+const matrix = new THREE.Matrix4();
+for (let i = 0; i < count; i++) {
+  matrix.setPosition(
+    Math.random() * 20 - 10,
+    Math.random() * 20 - 10,
+    Math.random() * 20 - 10
+  );
+  mesh.setMatrixAt(i, matrix);
+}
+scene.add(mesh);
+```
+
+## 2. 纹理优化
+
+### 纹理压缩
+
+使用压缩纹理格式可以显著减少显存占用：
+
+```javascript
+const textureLoader = new THREE.CompressedTextureLoader();
+const texture = textureLoader.load('textures/dxt1.ktx');
+```
+
+### 纹理图集
+
+将多个小纹理合并到一张大纹理中：
+
+```javascript
+// 使用工具如 TexturePacker 生成图集
+const textureAtlas = textureLoader.load('textures/atlas.png');
+```
+
+### 合理的纹理尺寸
+
+- 使用 2 的幂次方尺寸（256、512、1024）
+- 根据实际需要选择合适的分辨率
+- 考虑使用 mipmap
+
+## 3. 渲染优化
+
+### 视锥体剔除
+
+Three.js 默认启用视锥体剔除，但你可以手动控制：
+
+```javascript
+material.frustumCulled = false; // 禁用自动剔除
+```
+
+### LOD（Level of Detail）
+
+根据距离使用不同精度的模型：
+
+```javascript
+const lod = new THREE.LOD();
+lod.addLevel(highDetailMesh, 0);
+lod.addLevel(mediumDetailMesh, 50);
+lod.addLevel(lowDetailMesh, 100);
+scene.add(lod);
+```
+
+### 阴影优化
+
+```javascript
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+// 使用合适的光源类型
+const light = new THREE.DirectionalLight();
+light.castShadow = true;
+light.shadow.mapSize.width = 1024;
+light.shadow.mapSize.height = 1024;
+light.shadow.camera.near = 0.5;
+light.shadow.camera.far = 50;
+```
+
+## 4. 材质优化
+
+### 共享材质
+
+尽量复用材质对象：
+
+```javascript
+const sharedMaterial = new THREE.MeshStandardMaterial({
+  color: 0xff8c00,
+  roughness: 0.5,
+});
+
+for (let i = 0; i < 100; i++) {
+  const mesh = new THREE.Mesh(geometry, sharedMaterial);
+  scene.add(mesh);
+}
+```
+
+### 选择合适的材质
+
+- `MeshBasicMaterial`：无光照，最快
+- `MeshLambertMaterial`：简单光照，性能较好
+- `MeshStandardMaterial`：物理光照，效果最好但消耗较大
+- `MeshPhysicalMaterial`：最真实的材质，性能消耗最大
+
+## 5. 性能监控
+
+使用 stats.js 监控性能：
+
+```javascript
+import Stats from 'three/examples/jsm/libs/stats.module.js';
+
+const stats = new Stats();
+document.body.appendChild(stats.dom);
+
+function animate() {
+  stats.begin();
+  renderer.render(scene, camera);
+  stats.end();
+  requestAnimationFrame(animate);
+}
+```
+
+## 总结
+
+Three.js 性能优化是一个系统工程，需要从多个方面综合考虑：
+
+1. **减少 draw call**：合并几何体、使用实例化
+2. **优化纹理**：压缩、图集、合适尺寸
+3. **合理设置渲染参数**：阴影、光照、LOD
+4. **选择合适的材质**：根据需求平衡效果和性能
+5. **持续监控**：使用性能分析工具
+
+记住：过早优化是万恶之源，先确保代码正确，再进行优化。
+
+## 参考资源
+
+- [Three.js Documentation](https://threejs.org/docs/)
+- [Three.js Examples](https://threejs.org/examples/)
+- [WebGL Insights](https://www.amazon.com/WebGL-Insights-Patrick-Cozzi/dp/1430257920)

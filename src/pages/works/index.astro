@@ -1,10 +1,19 @@
 ---
 import Base from '@/layouts/Base.astro';
 import Card from '@/components/Card.astro';
+import { getCollection } from 'astro:content';
 import { useTranslations, getLocaleFromUrl } from '@/i18n';
 
 const locale = getLocaleFromUrl(Astro.url);
 const t = useTranslations(locale);
+
+const allWorks = await getCollection('works');
+const sortedWorks = allWorks.sort((a, b) => {
+  if (a.data.order !== b.data.order) {
+    return b.data.order - a.data.order;
+  }
+  return (b.data.date?.getTime() || 0) - (a.data.date?.getTime() || 0);
+});
 
 const categories = ['frontend', '3d', 'design-tools', 'other'];
 ---
@@ -24,26 +33,22 @@ const categories = ['frontend', '3d', 'design-tools', 'other'];
         ))}
       </div>
 
-      <div class="grid grid-3">
-        <Card
-          href="/works/frontend"
-          badge="frontend"
-          title="WebGL 粒子系统"
-          description="使用 Three.js 构建的交互式粒子效果，支持自定义参数和实时渲染。"
-        />
-        <Card
-          href="/works/3d"
-          badge="3d"
-          title="3D 产品展示台"
-          description="基于 WebGL 的 3D 产品展示方案，支持多角度查看和材质切换。"
-        />
-        <Card
-          href="/works/design-tools"
-          badge="design-tools"
-          title="设计工具合集"
-          description="一系列提升设计效率的小工具，包含颜色转换、渐变生成等功能。"
-        />
-      </div>
+      {sortedWorks.length > 0 ? (
+        <div class="grid grid-3">
+          {sortedWorks.map(work => (
+            <Card
+              href={`/works/${work.slug}`}
+              badge={work.data.category}
+              title={work.data.title}
+              description={work.data.description}
+            />
+          ))}
+        </div>
+      ) : (
+        <div class="empty-state">
+          <p>{t.works.empty}</p>
+        </div>
+      )}
     </div>
   </section>
 </Base>

@@ -1,0 +1,280 @@
+---
+import Base from '@/layouts/Base.astro';
+import { getCollection } from 'astro:content';
+import { useTranslations, getLocaleFromUrl } from '@/i18n';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('blog');
+  return posts.map(post => ({
+    params: { slug: post.slug },
+    props: { post },
+  }));
+}
+
+const { post } = Astro.props;
+const { Content } = await post.render();
+
+const locale = getLocaleFromUrl(Astro.url);
+const t = useTranslations(locale);
+
+const categories = {
+  frontend: '前端技术',
+  graphics: '图形学',
+  tools: '工具分享',
+  essay: '随笔'
+};
+---
+
+<Base title={post.data.title}>
+  <article class="blog-post">
+    <header class="post-header">
+      <div class="container">
+        <div class="post-meta">
+          <span class="post-category">{categories[post.data.category]}</span>
+          <time class="post-date">
+            {post.data.date.toLocaleDateString('zh-CN')}
+          </time>
+          {post.data.readTime && (
+            <span class="post-read-time">· {post.data.readTime} 分钟阅读</span>
+          )}
+        </div>
+        <h1 class="post-title">{post.data.title}</h1>
+        <p class="post-description">{post.data.description}</p>
+
+        {post.data.tags.length > 0 && (
+          <div class="post-tags">
+            {post.data.tags.map(tag => (
+              <span class="tag">#{tag}</span>
+            ))}
+          </div>
+        )}
+      </div>
+    </header>
+
+    {post.data.heroImage && (
+      <div class="post-hero">
+        <div class="container">
+          <img
+            src={post.data.heroImage}
+            alt={post.data.title}
+            class="hero-image"
+          />
+        </div>
+      </div>
+    )}
+
+    <div class="post-content">
+      <div class="container">
+        <div class="prose">
+          <Content />
+        </div>
+      </div>
+    </div>
+
+    <footer class="post-footer">
+      <div class="container">
+        <a href={`/${locale === 'en' ? 'en/' : ''}blog`} class="back-link">
+          ← 返回博客列表
+        </a>
+      </div>
+    </footer>
+  </article>
+</Base>
+
+<style>
+  .blog-post {
+    min-height: 100vh;
+    padding-top: var(--space-8);
+  }
+
+  .post-header {
+    margin-bottom: var(--space-8);
+    padding-bottom: var(--space-8);
+    border-bottom: 1px solid var(--bg-border);
+  }
+
+  .post-meta {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    margin-bottom: var(--space-4);
+    font-size: var(--text-sm);
+    color: var(--text-muted);
+  }
+
+  .post-category {
+    padding: var(--space-1) var(--space-3);
+    background: var(--accent-glow);
+    color: var(--accent);
+    border-radius: var(--radius-sm);
+    font-weight: 500;
+  }
+
+  .post-date {
+    color: var(--text-secondary);
+  }
+
+  .post-read-time {
+    color: var(--text-muted);
+  }
+
+  .post-title {
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: var(--space-4);
+    color: var(--text-primary);
+  }
+
+  .post-description {
+    font-size: var(--text-lg);
+    color: var(--text-secondary);
+    margin-bottom: var(--space-6);
+    line-height: 1.6;
+  }
+
+  .post-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  .tag {
+    padding: var(--space-1) var(--space-3);
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    background: var(--bg-base);
+    border: 1px solid var(--bg-border);
+    border-radius: var(--radius-sm);
+  }
+
+  .post-hero {
+    margin-bottom: var(--space-12);
+  }
+
+  .hero-image {
+    width: 100%;
+    height: auto;
+    max-height: 500px;
+    object-fit: cover;
+    border-radius: var(--radius-lg);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  }
+
+  .post-content {
+    margin-bottom: var(--space-16);
+  }
+
+  .prose {
+    max-width: 65ch;
+    margin: 0 auto;
+  }
+
+  .prose :global(h2) {
+    font-size: var(--text-2xl);
+    font-weight: 600;
+    margin-top: var(--space-12);
+    margin-bottom: var(--space-4);
+    color: var(--text-primary);
+  }
+
+  .prose :global(h3) {
+    font-size: var(--text-xl);
+    font-weight: 600;
+    margin-top: var(--space-8);
+    margin-bottom: var(--space-3);
+    color: var(--text-primary);
+  }
+
+  .prose :global(p) {
+    font-size: var(--text-base);
+    line-height: 1.8;
+    margin-bottom: var(--space-6);
+    color: var(--text-secondary);
+  }
+
+  .prose :global(code) {
+    padding: 0.2em 0.4em;
+    font-size: 0.9em;
+    background: var(--bg-elevated);
+    border: 1px solid var(--bg-border);
+    border-radius: var(--radius-sm);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .prose :global(pre) {
+    padding: var(--space-4);
+    margin-bottom: var(--space-6);
+    overflow-x: auto;
+    background: var(--bg-elevated);
+    border: 1px solid var(--bg-border);
+    border-radius: var(--radius-md);
+  }
+
+  .prose :global(pre code) {
+    padding: 0;
+    background: transparent;
+    border: none;
+  }
+
+  .prose :global(img) {
+    width: 100%;
+    height: auto;
+    margin: var(--space-8) 0;
+    border-radius: var(--radius-md);
+  }
+
+  .prose :global(ul),
+  .prose :global(ol) {
+    margin-bottom: var(--space-6);
+    padding-left: var(--space-6);
+    color: var(--text-secondary);
+  }
+
+  .prose :global(li) {
+    margin-bottom: var(--space-2);
+    line-height: 1.6;
+  }
+
+  .prose :global(blockquote) {
+    padding: var(--space-4) var(--space-6);
+    margin-bottom: var(--space-6);
+    border-left: 4px solid var(--accent);
+    background: var(--accent-glow);
+    color: var(--text-secondary);
+  }
+
+  .post-footer {
+    padding-top: var(--space-8);
+    border-top: 1px solid var(--bg-border);
+  }
+
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-6);
+    font-size: var(--text-base);
+    color: var(--text-secondary);
+    text-decoration: none;
+    border: 1px solid var(--bg-border);
+    border-radius: var(--radius-md);
+    transition: all var(--transition-fast);
+  }
+
+  .back-link:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--accent-glow);
+  }
+
+  @media (max-width: 768px) {
+    .post-title {
+      font-size: var(--text-2xl);
+    }
+
+    .prose {
+      max-width: 100%;
+    }
+  }
+</style>

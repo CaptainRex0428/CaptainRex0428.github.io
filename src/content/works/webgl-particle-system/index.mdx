@@ -1,0 +1,179 @@
+---
+title: "WebGL 粒子系统"
+description: "使用 Three.js 构建的交互式粒子效果，支持自定义参数和实时渲染。"
+category: frontend
+tags: ['Three.js', 'WebGL', '粒子系统', '交互设计']
+date: 2026-01-10
+featured: true
+order: 1
+---
+
+## 项目概述
+
+这是一个基于 Three.js 的交互式粒子系统，支持自定义粒子数量、颜色、运动轨迹等参数，并提供实时渲染效果。
+
+## 技术实现
+
+### 核心技术栈
+
+- **Three.js**：3D 渲染引擎
+- **GLSL**：自定义着色器实现粒子效果
+- **BufferGeometry**：高效管理大量粒子数据
+
+### 粒子系统架构
+
+使用自定义着色器实现 GPU 加速的粒子渲染：
+
+```javascript
+const particleCount = 10000;
+const geometry = new THREE.BufferGeometry();
+const positions = new Float32Array(particleCount * 3);
+const colors = new Float32Array(particleCount * 3);
+const sizes = new Float32Array(particleCount);
+
+// 初始化粒子数据
+for (let i = 0; i < particleCount; i++) {
+  positions[i * 3] = (Math.random() - 0.5) * 100;
+  positions[i * 3 + 1] = (Math.random() - 0.5) * 100;
+  positions[i * 3 + 2] = (Math.random() - 0.5) * 100;
+  
+  colors[i * 3] = Math.random();
+  colors[i * 3 + 1] = Math.random();
+  colors[i * 3 + 2] = Math.random();
+  
+  sizes[i] = Math.random() * 2;
+}
+
+geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+geometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+```
+
+### 自定义着色器
+
+顶点着色器：
+
+```glsl
+attribute float size;
+varying vec3 vColor;
+
+void main() {
+  vColor = color;
+  vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+  gl_PointSize = size * (300.0 / -mvPosition.z);
+  gl_Position = projectionMatrix * mvPosition;
+}
+```
+
+片元着色器：
+
+```glsl
+varying vec3 vColor;
+
+void main() {
+  // 创建圆形粒子
+  float r = distance(gl_PointCoord, vec2(0.5));
+  if (r > 0.5) discard;
+  
+  float alpha = 1.0 - smoothstep(0.3, 0.5, r);
+  gl_FragColor = vec4(vColor, alpha);
+}
+```
+
+## 交互功能
+
+### 参数控制面板
+
+提供实时参数调整：
+- 粒子数量
+- 粒子大小
+- 运动速度
+- 颜色方案
+
+### 鼠标交互
+
+- **点击**：添加新粒子爆发
+- **拖拽**：旋转视角
+- **滚轮**：缩放
+
+## 性能优化
+
+### GPU 加速
+
+使用 BufferGeometry 和自定义着色器，在 GPU 上完成粒子计算，避免 CPU 瓶颈。
+
+### 粒子复用
+
+实现粒子对象池，避免频繁创建销毁：
+
+```javascript
+class ParticlePool {
+  constructor(size) {
+    this.pool = [];
+    this.activeParticles = [];
+    
+    for (let i = 0; i < size; i++) {
+      this.pool.push(this.createParticle());
+    }
+  }
+  
+  get() {
+    return this.pool.pop() || this.createParticle();
+  }
+  
+  release(particle) {
+    this.pool.push(particle);
+  }
+}
+```
+
+## 效果展示
+
+系统支持多种粒子效果：
+- **爆炸效果**：从中心向外扩散
+- **旋涡效果**：围绕中心旋转
+- **雨滴效果**：受重力影响下落
+- **火焰效果**：模拟火焰燃烧
+
+## 技术挑战与解决方案
+
+### 1. 大量粒子的性能问题
+
+**解决方案**：使用 InstancedBufferGeometry 减少绘制调用。
+
+### 2. 粒子生命周期管理
+
+**解决方案**：实现粒子对象池和生命周期系统。
+
+### 3. 自定义效果扩展
+
+**解决方案**：设计灵活的参数系统，支持用户自定义着色器。
+
+## 应用场景
+
+- 数据可视化
+- 游戏特效
+- 交互艺术
+- 科学模拟
+
+## 项目收获
+
+通过这个项目，深入理解了：
+- Three.js 的底层渲染机制
+- GLSL 着色器编程
+- GPU 加速的重要性
+- 性能优化的最佳实践
+
+## 在线演示
+
+[查看在线 Demo](#)（待部署）
+
+## 代码仓库
+
+[GitHub Repository](#)（待上传）
+
+---
+
+**项目状态**：已完成
+**最后更新**：2026-01-10
+**作者**：CaptainRex

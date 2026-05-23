@@ -1,0 +1,198 @@
+---
+title: "3D 产品展示台"
+description: "基于 WebGL 的 3D 产品展示方案，支持多角度查看和材质切换。"
+category: 3d
+tags: ['Three.js', '3D', '产品展示', 'WebGL']
+date: 2026-01-12
+featured: true
+order: 2
+---
+
+## 项目简介
+
+一个功能完善的 3D 产品展示平台，为电商产品展示提供沉浸式的交互体验。
+
+## 核心功能
+
+### 多角度查看
+
+用户可��� 360 度自由旋转查看产品：
+
+```javascript
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.05;
+controls.minDistance = 5;
+controls.maxDistance = 20;
+```
+
+### 材质切换
+
+支持多种材质效果展示：
+- 哑光材质
+- 金属材质
+- 玻璃材质
+- 自定义纹理
+
+```javascript
+const materials = {
+  matte: new THREE.MeshStandardMaterial({
+    roughness: 0.8,
+    metalness: 0.1
+  }),
+  metal: new THREE.MeshStandardMaterial({
+    roughness: 0.2,
+    metalness: 0.9
+  }),
+  glass: new THREE.MeshPhysicalMaterial({
+    roughness: 0,
+    metalness: 0,
+    transmission: 1,
+    transparent: true
+  })
+};
+```
+
+### 环境预设
+
+提供多种光照环境：
+- 摄影棚光
+- 户外自然光
+- 工业光
+- 自定义光
+
+### 缩放适配
+
+自动适配不同屏幕尺寸：
+
+```javascript
+function onWindowResize() {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+}
+window.addEventListener('resize', onWindowResize);
+```
+
+## 技术亮点
+
+### PBR 材质系统
+
+使用物理渲染（PBR）获得真实的材质效果：
+
+```javascript
+const material = new THREE.MeshPhysicalMaterial({
+  color: 0xff8c00,
+  metalness: 0.5,
+  roughness: 0.2,
+  clearcoat: 1.0,
+  clearcoatRoughness: 0.1
+});
+```
+
+### HDR 环境贴图
+
+使用 HDR 贴图获得真实的光照效果：
+
+```javascript
+import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader';
+
+const rgbeLoader = new RGBELoader();
+rgbeLoader.load('path/to/env.hdr', (texture) => {
+  texture.mapping = THREE.EquirectangularReflectionMapping;
+  scene.environment = texture;
+});
+```
+
+### 后期处理
+
+添加抗锯齿、辉光等后期效果：
+
+```javascript
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer';
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass';
+import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass';
+
+const composer = new EffectComposer(renderer);
+const renderPass = new RenderPass(scene, camera);
+const bloomPass = new UnrealBloomPass(
+  new THREE.Vector2(window.innerWidth, window.innerHeight),
+  1.5, 0.4, 0.85
+);
+
+composer.addPass(renderPass);
+composer.addPass(bloomPass);
+```
+
+## 用户界面
+
+### 控制面板
+
+简洁的参数控制面板：
+- 材质选择器
+- 环境光切换
+- 颜色选择器
+- 显示选项
+
+### 响应式设计
+
+完美适配各种设备：
+- 桌面端：完整功能
+- 平板：适配触摸操作
+- 手机：简化界面，保持核心功能
+
+## 性能优化
+
+### 按需渲染
+
+只在场景变化时渲染：
+
+```javascript
+let needsRender = true;
+
+function animate() {
+  requestAnimationFrame(animate);
+  
+  if (needsRender) {
+    renderer.render(scene, camera);
+    needsRender = false;
+  }
+}
+
+controls.addEventListener('change', () => {
+  needsRender = true;
+});
+```
+
+### LOD 系统
+
+根据距离使用不同精度的模型：
+
+```javascript
+const lod = new THREE.LOD();
+lod.addLevel(highPolyModel, 0);
+lod.addLevel(mediumPolyModel, 10);
+lod.addLevel(lowPolyModel, 20);
+```
+
+## 应用场景
+
+- 电商产品展示
+- 汽车配置器
+- 家具预览
+- 珠宝展示
+
+## 未来计划
+
+- [ ] AR 支持
+- [ ] 更多材质预设
+- [ ] 动画展示功能
+- [ ] 自定义模型上传
+
+---
+
+**项目状态**：开发中
+**最后更新**：2026-01-12
+**作者**：CaptainRex
