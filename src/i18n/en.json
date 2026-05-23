@@ -59,7 +59,11 @@
   "social": {
     "zhihu": "Zhihu",
     "xiaohongshu": "Xiaohongshu",
-    "bilibili": "Bilibili"
+    "bilibili": "Bilibili",
+    "zhihuName": "Turing Tech Notes",
+    "xiaohongshuName": "Turing Digital Art",
+    "xiaohongshuName2": "Turing Digital Art Tech",
+    "bilibiliName": "Turing Digital Art RestArt"
   },
   "lang": {
     "switchToEn": "English",

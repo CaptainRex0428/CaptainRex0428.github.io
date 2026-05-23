@@ -92,6 +92,18 @@ const t = useTranslations(locale);
     </div>
   </section>
 
+<script>
+  document.addEventListener('click', (e) => {
+    const dropdown = e.target.closest('.social-dropdown');
+    document.querySelectorAll('.social-dropdown.open').forEach(d => {
+      if (d !== dropdown) d.classList.remove('open');
+    });
+    if (dropdown) {
+      dropdown.classList.toggle('open');
+    }
+  });
+</script>
+
   <!-- Contact CTA -->
   <section class="cta-section section">
     <div class="container">
@@ -99,14 +111,25 @@ const t = useTranslations(locale);
         <h2 class="cta-title">想聊聊？</h2>
         <p class="cta-desc">可以在以下平台找到我</p>
         <div class="social-links">
-          <a href="https://www.zhihu.com/people/turing-digiart" target="_blank" rel="noopener" class="social-btn">
-            知乎
+          <a href="https://www.zhihu.com/people/turing-digiart" target="_blank" rel="noopener" class="social-btn" title="知乎">
+            <img src="/icons/zhihu.png" alt="知乎" class="social-btn-icon" />
           </a>
-          <a href="https://www.xiaohongshu.com/user/profile/697ed5bd00000000210136e2" target="_blank" rel="noopener" class="social-btn">
-            小红书
-          </a>
-          <a href="https://space.bilibili.com/504030884" target="_blank" rel="noopener" class="social-btn">
-            图灵数字艺术RestArt
+          <div class="social-dropdown">
+            <button class="social-btn social-dropdown-btn" aria-expanded="false" aria-haspopup="true" title="小红书">
+              <img src="/icons/xiaohongshu.png" alt="小红书" class="social-btn-icon" />
+              <svg class="dropdown-arrow" viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M7 10l5 5 5-5z"/></svg>
+            </button>
+            <div class="social-dropdown-menu">
+              <a href="https://www.xiaohongshu.com/user/profile/697ed5bd00000000210136e2" target="_blank" rel="noopener" class="dropdown-item">
+                {t.social.xiaohongshuName}
+              </a>
+              <a href="https://www.xiaohongshu.com/user/profile/6709d2da000000001d03100c" target="_blank" rel="noopener" class="dropdown-item">
+                {t.social.xiaohongshuName2}
+              </a>
+            </div>
+          </div>
+          <a href="https://space.bilibili.com/504030884" target="_blank" rel="noopener" class="social-btn" title="B站">
+            <img src="/icons/bilibili.png" alt="B站" class="social-btn-icon" />
           </a>
         </div>
       </div>
@@ -232,7 +255,11 @@ const t = useTranslations(locale);
   }
 
   .social-btn {
-    padding: var(--space-3) var(--space-6);
+    padding: 8px;
+    height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     background: var(--bg-base);
     border: 1px solid var(--bg-border);
     border-radius: var(--radius-md);
@@ -240,10 +267,77 @@ const t = useTranslations(locale);
     transition: all var(--transition-fast);
   }
 
+  .social-btn .social-btn-icon {
+    height: 32px;
+    width: auto;
+  }
+
   .social-btn:hover {
     border-color: var(--accent);
     color: var(--accent);
     background: var(--accent-glow);
+  }
+  }
+
+  .social-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--accent-glow);
+  }
+
+  .social-dropdown {
+    position: relative;
+    display: inline-flex;
+  }
+
+  .social-dropdown-btn {
+    cursor: pointer;
+    gap: var(--space-2);
+  }
+
+  .dropdown-arrow {
+    transition: transform 0.2s ease;
+  }
+
+  .social-dropdown.open .dropdown-arrow {
+    transform: rotate(180deg);
+  }
+
+  .social-dropdown-menu {
+    position: absolute;
+    bottom: calc(100% + var(--space-2));
+    left: 50%;
+    transform: translateX(-50%);
+    min-width: 180px;
+    background: var(--bg-elevated);
+    border: 1px solid var(--bg-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-2);
+    display: none;
+    z-index: 100;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  }
+
+  .social-dropdown.open .social-dropdown-menu {
+    display: block;
+    animation: fadeIn 0.15s ease;
+  }
+
+  .dropdown-item {
+    display: block;
+    padding: var(--space-2) var(--space-4);
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+  }
+
+  .dropdown-item:hover {
+    background: var(--accent-glow);
+    color: var(--text-primary);
+    border-color: var(--accent);
   }
 
   @media (max-width: 1024px) {

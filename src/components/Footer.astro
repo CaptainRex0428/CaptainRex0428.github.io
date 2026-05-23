@@ -1,23 +1,31 @@
 ---
 import { getLocaleFromUrl, useTranslations } from '@/i18n';
+import { contactInfo } from '@/config/contact';
 
 const locale = getLocaleFromUrl(Astro.url);
 const t = useTranslations(locale);
 
+const contactItems = [
+  { ...contactInfo.phone, copyValue: contactInfo.phone.value },
+  { ...contactInfo.email, copyValue: contactInfo.email.value },
+  { ...contactInfo.wechat, copyValue: contactInfo.wechat.value, hasQR: true },
+  { ...contactInfo.wechat2, copyValue: contactInfo.wechat2.value, hasQR: true }
+];
+
 const socials = [
-  { label: '图灵技术手记', href: 'https://www.zhihu.com/people/turing-digiart' },
-  { label: '图灵数字艺术', href: 'https://www.xiaohongshu.com/user/profile/697ed5bd00000000210136e2' },
-  { label: '图灵数字艺术技术手记', href: 'https://www.xiaohongshu.com/user/profile/6709d2da000000001d03100c' },
-  { label: '图灵数字艺术RestArt', href: 'https://space.bilibili.com/504030884' },
+  { label: '图灵技术手记', href: 'https://www.zhihu.com/people/turing-digiart', platform: '知乎' },
+  { label: '图灵数字艺术', href: 'https://www.xiaohongshu.com/user/profile/697ed5bd00000000210136e2', platform: '小红书' },
+  { label: '图灵数字艺术技术手记', href: 'https://www.xiaohongshu.com/user/profile/6709d2da000000001d03100c', platform: '小红书' },
+  { label: '图灵数字艺术RestArt', href: 'https://space.bilibili.com/504030884', platform: 'B站' },
 ];
 ---
 
 <footer class="footer">
   <div class="container">
-    <div class="footer-content">
-      <div class="footer-brand">
-        <span class="brand-name">CaptainRex</span>
-        <div class="brand-tags">
+    <div class="footer-grid">
+      <div class="footer-section footer-brand">
+        <h4 class="section-title">CaptainRex</h4>
+        <div class="brand-info">
           <span class="brand-tag">游戏资深技术美术（TA）</span>
           <span class="brand-tag">中国传媒大学数字艺术 MA</span>
           <span class="brand-tag">腾讯数字艺术领军人才实验班讲师</span>
@@ -26,8 +34,8 @@ const socials = [
         </div>
       </div>
 
-      <div class="footer-social">
-        <h4 class="social-title">社交平台</h4>
+      <div class="footer-section footer-social">
+        <h4 class="section-title">社交平台</h4>
         <div class="social-links">
           {socials.map(s => (
             <a
@@ -36,8 +44,32 @@ const socials = [
               rel="noopener noreferrer"
               class="social-link"
             >
-              {s.label}
+              {s.label}<span class="platform-tag">（{s.platform}）</span>
             </a>
+          ))}
+        </div>
+      </div>
+
+      <div class="footer-section footer-contact">
+        <h4 class="section-title">{t.contact.title}</h4>
+        <div class="contact-list">
+          {contactItems.map((item, index) => (
+            item.hasQR ? (
+              <div class="contact-item contact-item-with-qr">
+                <button class="contact-button" data-copy={item.copyValue} data-index={index}>
+                  <span class="contact-icon">{item.icon}</span>
+                  <span class="contact-text">{item.value}</span>
+                </button>
+                <div class="contact-qr">
+                  <img src={item.qrCode} alt={`${item.label}二维码`} class="qr-image" />
+                </div>
+              </div>
+            ) : (
+              <button class="contact-button" data-copy={item.copyValue} data-index={index}>
+                <span class="contact-icon">{item.icon}</span>
+                <span class="contact-text">{item.value}</span>
+              </button>
+            )
           ))}
         </div>
       </div>
@@ -51,6 +83,8 @@ const socials = [
   </div>
 </footer>
 
+<div id="toast" class="toast">已复制!</div>
+
 <style>
   .footer {
     margin-top: auto;
@@ -59,28 +93,29 @@ const socials = [
     border-top: 1px solid var(--bg-border);
   }
 
-  .footer-content {
+  .footer-grid {
     display: grid;
-    grid-template-columns: 1fr auto;
-    gap: var(--space-12);
-    margin-bottom: var(--space-12);
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: var(--space-8);
+    margin-bottom: var(--space-8);
   }
 
-  .footer-brand {
-    max-width: 400px;
-  }
-
-  .brand-name {
-    font-size: var(--text-xl);
-    font-weight: 700;
-    color: var(--text-primary);
-  }
-
-  .brand-tags {
+  .footer-section {
     display: flex;
     flex-direction: column;
-    gap: var(--space-1);
-    margin-top: var(--space-3);
+  }
+
+  .section-title {
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--space-4);
+  }
+
+  .brand-info {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
   }
 
   .brand-tag {
@@ -88,22 +123,10 @@ const socials = [
     color: var(--text-muted);
   }
 
-  .footer-social {
-    text-align: right;
-  }
-
-  .social-title {
-    font-size: var(--text-sm);
-    font-weight: 600;
-    color: var(--text-primary);
-    margin-bottom: var(--space-4);
-  }
-
   .social-links {
     display: flex;
     flex-direction: column;
     gap: var(--space-2);
-    align-items: flex-end;
   }
 
   .social-link {
@@ -118,6 +141,100 @@ const socials = [
     color: var(--accent);
   }
 
+  .platform-tag {
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+    margin-left: 4px;
+  }
+
+  .social-link:hover .platform-tag {
+    color: var(--accent);
+  }
+
+  .contact-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  .contact-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    position: relative;
+  }
+
+  .contact-button {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-3);
+    background: var(--bg-base);
+    border: 1px solid var(--bg-border);
+    border-radius: var(--radius-sm);
+    font-size: var(--text-xs);
+    color: var(--text-secondary);
+    transition: all var(--transition-fast);
+    cursor: pointer;
+    font-family: inherit;
+    width: 100%;
+    min-width: 0;
+    text-align: left;
+  }
+
+  .contact-button:hover {
+    border-color: var(--accent);
+    background: var(--accent-glow);
+    color: var(--text-primary);
+  }
+
+  .contact-item-with-qr {
+    position: relative;
+  }
+
+  .contact-qr {
+    position: absolute;
+    bottom: calc(100% + 4px);
+    left: 50%;
+    transform: translateX(-50%) scale(0.9);
+    width: 120px;
+    height: 120px;
+    background: var(--bg-elevated);
+    border: 1px solid var(--bg-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-1);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.2s ease;
+    pointer-events: none;
+    z-index: 100;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+
+  .contact-item-with-qr:hover .contact-qr {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) scale(1);
+  }
+
+  .qr-image {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    filter: brightness(0) invert(1);
+  }
+
+  .contact-icon {
+    font-size: var(--text-sm);
+    flex-shrink: 0;
+  }
+
+  .contact-text {
+    font-size: var(--text-xs);
+    color: var(--text-secondary);
+    word-break: break-all;
+  }
+
   .footer-bottom {
     padding-top: var(--space-8);
     border-top: 1px solid var(--bg-border);
@@ -130,18 +247,77 @@ const socials = [
     margin: 0;
   }
 
-  @media (max-width: 768px) {
-    .footer-content {
+  .toast {
+    position: fixed;
+    bottom: var(--space-8);
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--accent);
+    color: var(--bg-base);
+    padding: var(--space-3) var(--space-6);
+    border-radius: var(--radius-md);
+    font-size: var(--text-sm);
+    font-weight: 500;
+    opacity: 0;
+    transition: all 0.3s ease;
+    z-index: 1000;
+    pointer-events: none;
+  }
+
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  @media (max-width: 1024px) {
+    .footer-grid {
       grid-template-columns: 1fr;
-      gap: var(--space-8);
+      gap: var(--space-6);
+    }
+  }
+
+  @media (max-width: 768px) {
+    .footer-grid {
+      grid-template-columns: 1fr;
     }
 
-    .footer-social {
-      text-align: left;
-    }
-
-    .social-links {
-      align-items: flex-start;
+    .footer-section {
+      margin-bottom: var(--space-6);
     }
   }
 </style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const contactButtons = document.querySelectorAll('.contact-button');
+    const toast = document.getElementById('toast');
+
+    contactButtons.forEach(button => {
+      button.addEventListener('click', function(e) {
+        e.preventDefault();
+        const textToCopy = this.getAttribute('data-copy');
+
+        if (textToCopy) {
+          navigator.clipboard.writeText(textToCopy).then(() => {
+            toast.classList.add('show');
+
+            setTimeout(() => {
+              toast.classList.remove('show');
+            }, 2000);
+          }).catch(err => {
+            console.error('复制失败:', err);
+            toast.textContent = '复制失败';
+            toast.classList.add('show');
+
+            setTimeout(() => {
+              toast.classList.remove('show');
+              setTimeout(() => {
+                toast.textContent = '已复制!';
+              }, 300);
+            }, 2000);
+          });
+        }
+      });
+    });
+  });
+</script>

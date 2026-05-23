@@ -20,13 +20,19 @@
   },
   "about": {
     "title": "关于我",
-    "intro": "中国传媒大学传动画与数字艺术学院数字艺术 MA，现任游戏资深技术美术 (TA) 与数字艺术与数字技术专业讲师。六年从业经验，助力近百位学员成功上岸。兼任国家大剧院多媒体设计、腾讯数字艺术领军人才实验班虚拟场景设计讲师。参与过百度希壤、中国科幻大会等项目概念设计。致力于 UE / DirectX / C++ 游戏研究和开发，参与编著《虚幻引擎开发基础与实践》《虚幻引擎实践篇：虚拟制片》。",
+    "intro": "中国传媒大学传动画与数字艺术学院数字艺术硕士MA\n中国传媒大学电视学院编辑出版学系学士学位\n中国传媒大学戏剧影视学院摄影系第二学士学位\n现任 游戏资深技术美术 (TA)  数字艺术与数字技术专业讲师\n曾任 国家大剧院多媒体设计 腾讯数字艺术领军人才实验班虚拟场景设计讲师\n参与过百度希壤、中国科幻大会等项目概念设计\n早期从事影视特效合成 影视剪辑 综艺/纪录片导演\n现致力于 UE / DirectX / C++ 游戏研究和开发\n参与编著《虚幻引擎开发基础与实践》《虚幻引擎实践篇：虚拟制片》",
     "skills": "技术专长",
     "skillsList": {
-      "ta": "技术美术 (TA)",
-      "ue": "UE / 虚幻引擎",
-      "tools": "数字艺术工具",
-      "writing": "技术写作与出版"
+      "gamedev": "游戏开发",
+      "dcc": "DCC工具",
+      "vfx": "视效与互动制作",
+      "education": "教研与出版"
+    },
+    "skillsDetail": {
+      "gamedev": "DirectX/OpenGL开发\nShader管线优化、API开发\nC++/C#/Python程序语言",
+      "dcc": "Blender/Houdini/Substance Designer/Substance Painter/Zbrush\nAI Vibe Coding工作流研究",
+      "vfx": "AE/Davinci Resolve/Nuke\n虚拟制片/动作捕捉/交互装置",
+      "education": "参与编著《虚幻引擎开发基础与实践》《虚幻引擎实践篇：虚拟制片》\n6年数字艺术教育和数字技术教育经验"
     }
   },
   "works": {
@@ -59,10 +65,22 @@
   "social": {
     "zhihu": "知乎",
     "xiaohongshu": "小红书",
-    "bilibili": "Bilibili"
+    "bilibili": "B站",
+    "zhihuName": "图灵技术手记",
+    "xiaohongshuName": "图灵数字艺术",
+    "xiaohongshuName2": "图灵数字艺术技术手记",
+    "bilibiliName": "图灵数字艺术RestArt"
   },
   "lang": {
     "switchToEn": "English",
     "switchToZh": "中文"
+  },
+  "contact": {
+    "title": "联系方式",
+    "phone": "电话",
+    "email": "邮箱",
+    "wechat": "微信",
+    "wechatLabel": "微信号",
+    "wechat2Label": "工作微信"
   }
 }
