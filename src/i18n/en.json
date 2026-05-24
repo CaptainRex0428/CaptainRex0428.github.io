@@ -68,5 +68,13 @@
   "lang": {
     "switchToEn": "English",
     "switchToZh": "中文"
+  },
+  "contact": {
+    "title": "Contact",
+    "phone": "Phone",
+    "email": "Email",
+    "wechat": "WeChat",
+    "wechatLabel": "WeChat ID",
+    "wechat2Label": "Work WeChat"
   }
 }

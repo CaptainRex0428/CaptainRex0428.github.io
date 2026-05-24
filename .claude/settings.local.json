@@ -8,7 +8,8 @@
       "Bash(node download-zhihu-images.mjs)",
       "Bash(gh api *)",
       "Bash(gh run *)",
-      "Bash(gh auth *)"
+      "Bash(gh auth *)",
+      "Bash(npm run *)"
     ]
   }
 }
