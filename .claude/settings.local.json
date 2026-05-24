@@ -3,7 +3,9 @@
     "allow": [
       "Bash(cd:*)",
       "Bash(head:*)",
-      "Bash(tail:*)"
+      "Bash(tail:*)",
+      "Bash(node download-zhihu-images.js)",
+      "Bash(node download-zhihu-images.mjs)"
     ]
   }
 }
