@@ -5,7 +5,10 @@
       "Bash(head:*)",
       "Bash(tail:*)",
       "Bash(node download-zhihu-images.js)",
-      "Bash(node download-zhihu-images.mjs)"
+      "Bash(node download-zhihu-images.mjs)",
+      "Bash(gh api *)",
+      "Bash(gh run *)",
+      "Bash(gh auth *)"
     ]
   }
 }
