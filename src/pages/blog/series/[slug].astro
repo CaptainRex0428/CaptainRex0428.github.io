@@ -27,6 +27,11 @@ const seriesPosts = getSeriesPosts(series.data.items, allPosts);
         <div class="series-info">
           <h1 class="series-title">{series.data.title}</h1>
           <p class="series-description">{series.data.description}</p>
+          <div class="series-tags">
+            {(series.data.tags || []).map(tag => (
+              <a href={`/blog/tags/${encodeURIComponent(tag)}`} class="tag">#{tag}</a>
+            ))}
+          </div>
           <div class="series-meta">
             <span class="series-count">{seriesPosts.length} 篇文章</span>
             {series.data.date && (
@@ -38,18 +43,31 @@ const seriesPosts = getSeriesPosts(series.data.items, allPosts);
 
       <!-- Series Posts -->
       <section class="series-posts">
-        <h2 class="section-title">文章列表</h2>
         {seriesPosts.length > 0 ? (
-          <div class="posts-grid">
-            {seriesPosts.map((post, index) => (
-              <Card
-                href={`/blog/${post.slug}`}
-                badge={`第 ${index + 1} 篇`}
-                badgeText={`第 ${index + 1} 篇`}
-                title={post.data.title}
-                description={post.data.description}
-                date={formatDateShort(post.data.date)}
-              />
+          <div class="posts-list">
+            {seriesPosts.map(post => (
+              <a href={`/blog/${post.slug}`} class="post-item">
+                <h3 class="post-title">{post.data.title}</h3>
+                <div class={`post-row ${post.data.heroImage ? 'has-image' : 'no-image'}`}>
+                  {post.data.heroImage && (
+                    <div class="post-cover">
+                      <img src={post.data.heroImage} alt={post.data.title} />
+                    </div>
+                  )}
+                  <div class="post-content">
+                    <p class="post-desc">{post.data.description}</p>
+                    <div class="post-meta">
+                      <div class="post-tags">
+                        {(post.data.tags || []).slice(0, 5).map(tag => (
+                          <span class="tag">#{tag}</span>
+                        ))}
+                      </div>
+                      <time class="post-date">{formatDateShort(post.data.date)}</time>
+                    </div>
+                  </div>
+                  {post.data.heroImage && <span class="post-arrow">&rarr;</span>}
+                </div>
+              </a>
             ))}
           </div>
         ) : (
@@ -106,6 +124,30 @@ const seriesPosts = getSeriesPosts(series.data.items, allPosts);
     color: var(--text-muted);
   }
 
+  .series-tags {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin-bottom: var(--space-4);
+  }
+
+  .tag {
+    padding: var(--space-1) var(--space-3);
+    font-size: var(--text-xs);
+    color: var(--accent);
+    background: var(--accent-glow);
+    border: 1px solid var(--accent);
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    transition: all var(--transition-fast);
+  }
+
+  .series-tags .tag:hover {
+    background: var(--accent);
+    color: var(--bg-base);
+  }
+
   .section-title {
     font-size: var(--text-2xl);
     font-weight: 600;
@@ -113,9 +155,146 @@ const seriesPosts = getSeriesPosts(series.data.items, allPosts);
     color: var(--text-primary);
   }
 
-  .posts-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  .posts-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+
+  .post-item {
+    display: flex;
+    flex-direction: column;
+    padding: var(--space-4);
+    background: var(--bg-elevated);
+    border: 1px solid var(--bg-border);
+    border-radius: var(--radius-lg);
+    text-decoration: none;
+    color: inherit;
+    transition: all var(--transition-base);
+  }
+
+  .post-item:hover {
+    border-color: var(--accent);
+    background: var(--accent-glow);
+    transform: translateX(4px);
+  }
+
+  .post-title {
+    font-size: var(--text-lg);
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--space-4);
+    transition: color var(--transition-fast);
+  }
+
+  .post-item:hover .post-title {
+    color: var(--accent);
+  }
+
+  .post-row {
+    display: flex;
     gap: var(--space-6);
+  }
+
+  .post-cover {
+    flex-shrink: 0;
+    width: 160px;
+    aspect-ratio: 16 / 9;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    background: var(--bg-base);
+  }
+
+  .post-row.no-image {
+    flex-direction: column;
+  }
+
+  .post-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform var(--transition-slow);
+  }
+
+  .post-item:hover .post-cover img {
+    transform: scale(1.05);
+  }
+
+  .post-content {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .post-desc {
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    margin-bottom: var(--space-3);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .post-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--space-4);
+    margin-top: auto;
+  }
+
+  .post-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  .post-tags .tag {
+    font-size: var(--text-xs);
+    color: var(--text-secondary);
+    background: var(--bg-base);
+    border: 1px solid var(--bg-border);
+  }
+
+  .post-item:hover .post-tags .tag {
+    background: transparent;
+    border-color: transparent;
+  }
+
+  .post-date {
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+    margin-left: auto;
+  }
+
+  .post-arrow {
+    font-size: var(--text-xl);
+    color: var(--text-muted);
+    transition: all var(--transition-fast);
+    align-self: center;
+  }
+
+  .post-item:hover .post-arrow {
+    color: var(--accent);
+    transform: translateX(4px);
+  }
+
+  @media (max-width: 768px) {
+    .post-item {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .post-row {
+      flex-direction: column;
+    }
+
+    .post-cover {
+      width: 100%;
+    }
+
+    .post-arrow {
+      display: none;
+    }
   }
 </style>

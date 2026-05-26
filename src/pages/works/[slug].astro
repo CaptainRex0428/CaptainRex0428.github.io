@@ -31,9 +31,6 @@ const categories = {
       <div class="container">
         <div class="work-meta">
           <span class="work-category">{categories[work.data.category]}</span>
-          {work.data.featured && (
-            <span class="work-featured">⭐ 精选</span>
-          )}
           {work.data.date && (
             <time class="work-date">
               {work.data.date.toLocaleDateString('zh-CN')}
@@ -110,14 +107,6 @@ const categories = {
     padding: var(--space-1) var(--space-3);
     background: var(--accent-glow);
     color: var(--accent);
-    border-radius: var(--radius-sm);
-    font-weight: 500;
-  }
-
-  .work-featured {
-    padding: var(--space-1) var(--space-3);
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
     border-radius: var(--radius-sm);
     font-weight: 500;
   }

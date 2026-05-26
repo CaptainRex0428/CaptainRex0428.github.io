@@ -1,0 +1,230 @@
+---
+/**
+ * 动态标签过滤组件 - 基于内容的实际标签动态生成过滤器
+ */
+export interface Props {
+  id: string; // 过滤器唯一ID
+  labels: string[]; // 所有可用的标签
+  targetType: 'series' | 'posts' | 'works'; // 目标内容类型
+  maxVisible?: number; // 最大显示标签数，超过则隐藏
+}
+
+const { id, labels = [], targetType, maxVisible = 8 } = Astro.props;
+const visibleLabels = labels.slice(0, maxVisible);
+const hasMore = labels.length > maxVisible;
+---
+
+<div class="dynamic-filter" data-filter-id={id} data-target-type={targetType}>
+  <button data-filter="all" class="filter-btn active">全部</button>
+
+  <div class="filter-buttons">
+    {visibleLabels.map(label => (
+      <button data-filter={`tag-${label}`} class="filter-btn">#{label}</button>
+    ))}
+  </div>
+
+  {hasMore && (
+    <button class="show-all-btn" data-expanded="false">
+      <span class="btn-text">全部</span>
+      <svg class="dropdown-icon" viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+        <path d="M7 10l5 5 5-5z"/>
+      </svg>
+    </button>
+  )}
+
+  <!-- 隐藏的额外标签按钮 -->
+  {hasMore && (
+    <div class="extra-filters hidden">
+      {labels.slice(maxVisible).map(label => (
+        <button data-filter={`tag-${label}`} class="filter-btn">#{label}</button>
+      ))}
+    </div>
+  )}
+</div>
+
+<style>
+  .dynamic-filter {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    margin-bottom: var(--space-6);
+    flex-wrap: wrap;
+  }
+
+  .filter-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  .filter-btn {
+    padding: var(--space-1) var(--space-3);
+    font-size: var(--text-xs);
+    font-weight: 500;
+    color: var(--text-secondary);
+    background: var(--bg-elevated);
+    border: 1px solid var(--bg-border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    white-space: nowrap;
+  }
+
+  .filter-btn:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+    background: var(--accent-glow);
+  }
+
+  .filter-btn.active {
+    color: var(--accent);
+    border-color: var(--accent);
+    background: var(--accent-glow);
+  }
+
+  .show-all-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    padding: var(--space-1) var(--space-3);
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+    background: transparent;
+    border: 1px dashed var(--bg-border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+  }
+
+  .show-all-btn:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+    border-style: solid;
+  }
+
+  .dropdown-icon {
+    transition: transform 0.2s ease;
+  }
+
+  .show-all-btn[data-expanded="true"] .dropdown-icon {
+    transform: rotate(180deg);
+  }
+
+  .extra-filters {
+    display: none;
+    width: 100%;
+    margin-top: var(--space-2);
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  .extra-filters:not(.hidden) {
+    display: flex;
+  }
+
+  @media (max-width: 768px) {
+    .dynamic-filter {
+      gap: var(--space-2);
+    }
+
+    .filter-buttons {
+      gap: var(--space-1);
+    }
+  }
+</style>
+
+<script define:vars={{ id, targetType, maxVisible }}>
+  document.addEventListener('DOMContentLoaded', () => {
+    const filterContainer = document.querySelector(`[data-filter-id="${id}"]`);
+    if (!filterContainer) return;
+
+    const filterButtons = filterContainer.querySelectorAll('.filter-btn');
+    const showAllBtn = filterContainer.querySelector('.show-all-btn');
+    const extraFilters = filterContainer.querySelector('.extra-filters');
+
+    // 处理"全部"按钮展开/收起
+    showAllBtn?.addEventListener('click', () => {
+      const isExpanded = showAllBtn.getAttribute('data-expanded') === 'true';
+      showAllBtn.setAttribute('data-expanded', isExpanded ? 'false' : 'true');
+
+      const btnText = showAllBtn.querySelector('.btn-text');
+      if (btnText) {
+        btnText.textContent = isExpanded ? '全部' : '收起';
+      }
+
+      if (extraFilters) {
+        extraFilters.classList.toggle('hidden', isExpanded);
+      }
+    });
+
+    // 过滤逻辑
+    filterButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        const filter = button.dataset.filter;
+
+        // 更新当前过滤器内的所有按钮状态
+        const allButtonsInContainer = filterContainer.querySelectorAll('.filter-btn');
+        allButtonsInContainer.forEach(btn => btn.classList.remove('active'));
+        button.classList.add('active');
+
+        // 只过滤对应类型的内容
+        const targetSelector = `[data-content-type="${targetType}"]`;
+        const contentItems = document.querySelectorAll(targetSelector);
+
+        contentItems.forEach(item => {
+          const itemTags = item.dataset.tags || '';
+          let shouldShow = false;
+
+          if (filter === 'all') {
+            shouldShow = true;
+          } else if (filter?.startsWith('tag-')) {
+            const tag = filter.replace('tag-', '');
+            shouldShow = itemTags.includes(tag);
+          }
+
+          // 动画效果
+          if (shouldShow) {
+            item.classList.remove('hidden');
+            item.classList.add('fade-in');
+            setTimeout(() => item.classList.remove('fade-in'), 300);
+          } else {
+            item.classList.add('hidden');
+          }
+        });
+
+        // 更新 URL 参数
+        const url = new URL(window.location.href);
+        const paramKey = targetType === 'series' ? 'series-tag' :
+                        targetType === 'posts' ? 'posts-tag' : 'works-tag';
+
+        if (filter === 'all') {
+          url.searchParams.delete(paramKey);
+        } else if (filter?.startsWith('tag-')) {
+          const tag = filter.replace('tag-', '');
+          url.searchParams.set(paramKey, tag);
+        }
+
+        history.pushState({}, '', url);
+      });
+    });
+
+    // 页面加载时恢复过滤状态
+    const urlParams = new URLSearchParams(window.location.search);
+    const paramKey = targetType === 'series' ? 'series-tag' :
+                    targetType === 'posts' ? 'posts-tag' : 'works-tag';
+    const tagParam = urlParams.get(paramKey);
+
+    if (tagParam) {
+      const targetButton = filterContainer.querySelector(`[data-filter="tag-${tagParam}"]`);
+
+      // 如果目标按钮在隐藏区域，先展开
+      if (targetButton && targetButton.closest('.extra-filters')) {
+        showAllBtn?.click();
+        // 展开后延迟点击
+        setTimeout(() => targetButton?.click(), 100);
+      } else {
+        targetButton?.click();
+      }
+    }
+  });
+</script>

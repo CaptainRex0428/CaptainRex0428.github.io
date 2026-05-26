@@ -2,11 +2,11 @@
 import Base from '@/layouts/Base.astro';
 import Card from '@/components/Card.astro';
 import SeriesCard from '@/components/SeriesCard.astro';
-import TagCloud from '@/components/TagCloud.astro';
+import DynamicTagFilter from '@/components/DynamicTagFilter.astro';
 import { getCollection } from 'astro:content';
 import { useTranslations, getLocaleFromUrl } from '@/i18n';
 import { formatDateShort } from '@/utils/formatDate';
-import { getTagStatistics, getStandalonePosts, aggregateSeriesTags } from '@/utils/tagHelpers';
+import { getStandalonePosts } from '@/utils/tagHelpers';
 
 const locale = getLocaleFromUrl(Astro.url);
 const t = useTranslations(locale);
@@ -27,8 +27,11 @@ const sortedSeries = allSeries.sort((a, b) => {
   return (b.data.date?.getTime() || 0) - (a.data.date?.getTime() || 0);
 });
 
-// Get tag statistics
-const tagStats = getTagStatistics(publishedPosts, []);
+// 动态计算合集的标签（使用合集自己的独立标签）
+const seriesTags = [...new Set(sortedSeries.flatMap(series => series.data.tags || []))];
+
+// 动态计算文章的标签
+const postsTags = [...new Set(standalonePosts.flatMap(post => post.data.tags || []))];
 
 const categories = ['frontend', 'graphics', 'tools', 'essay'];
 const categoryNames: Record<string, string> = {
@@ -47,54 +50,64 @@ const categoryNames: Record<string, string> = {
         <p class="page-subtitle">{t.blog.subtitle}</p>
       </div>
 
-      <div class="filters">
-        <a href="/blog" class="filter active">全部</a>
-        <a href="/blog/series" class="filter">合集</a>
-        {categories.map(cat => (
-          <a href={`/blog/${cat}`} class="filter">{categoryNames[cat]}</a>
-        ))}
-      </div>
-
       <!-- Series Section -->
       {sortedSeries.length > 0 && (
         <section class="series-section">
           <h2 class="section-title">合集</h2>
+          <!-- 合集动态标签过滤器 -->
+          {seriesTags.length > 0 && (
+            <DynamicTagFilter
+              id="blog-series-filter"
+              labels={seriesTags}
+              targetType="series"
+              maxVisible={8}
+            />
+          )}
           <div class="series-list">
             {sortedSeries.map(series => (
-              <SeriesCard
-                href={`/blog/series/${series.slug}`}
-                title={series.data.title}
-                description={series.data.description}
-                cover={series.data.coverImage}
-                tags={aggregateSeriesTags(series.data.items, publishedPosts)}
-                itemCount={series.data.items.length}
-              />
+              <div class="content-item"
+                   data-content-type="series"
+                   data-tags={(series.data.tags || []).join(',')}>
+                <SeriesCard
+                  href={`/blog/series/${series.slug}`}
+                  title={series.data.title}
+                  description={series.data.description}
+                  cover={series.data.coverImage}
+                  tags={series.data.tags || []}
+                  itemCount={series.data.items.length}
+                />
+              </div>
             ))}
           </div>
-        </section>
-      )}
-
-      <!-- Tag Cloud -->
-      {tagStats.length > 0 && (
-        <section class="tags-section">
-          <h2 class="section-title">标签</h2>
-          <TagCloud stats={tagStats} baseUrl="/blog/tags" />
         </section>
       )}
 
       <!-- Standalone Posts -->
       <section class="posts-section">
         <h2 class="section-title">文章</h2>
+        <!-- 文章动态标签过滤器 -->
+        {postsTags.length > 0 && (
+          <DynamicTagFilter
+            id="blog-posts-filter"
+            labels={postsTags}
+            targetType="posts"
+            maxVisible={8}
+          />
+        )}
         {standalonePosts.length > 0 ? (
           <div class="grid grid-2">
             {standalonePosts.map(post => (
-              <Card
-                href={`/blog/${post.slug}`}
-                badge={post.data.category}
-                title={post.data.title}
-                description={post.data.description}
-                date={formatDateShort(post.data.date)}
-              />
+              <div class="content-item"
+                   data-content-type="posts"
+                   data-tags={(post.data.tags || []).join(',')}>
+                <Card
+                  href={`/blog/${post.slug}`}
+                  title={post.data.title}
+                  description={post.data.description}
+                  tags={post.data.tags}
+                  date={formatDateShort(post.data.date)}
+                />
+              </div>
             ))}
           </div>
         ) : (
@@ -150,9 +163,15 @@ const categoryNames: Record<string, string> = {
   }
 
   .series-section,
-  .tags-section,
-  .posts-section {
+  .posts-section,
+  .tags-section {
     margin-bottom: var(--space-12);
+  }
+
+  .global-tags {
+    margin-top: var(--space-16);
+    padding-top: var(--space-8);
+    border-top: 1px solid var(--bg-border);
   }
 
   .section-title {
@@ -166,5 +185,29 @@ const categoryNames: Record<string, string> = {
     display: flex;
     flex-direction: column;
     gap: var(--space-4);
+  }
+
+  /* 客户端过滤动画 */
+  .content-item {
+    transition: opacity var(--transition-base), transform var(--transition-base);
+  }
+
+  .content-item.hidden {
+    display: none;
+  }
+
+  .content-item.fade-in {
+    animation: fadeIn var(--transition-base) ease;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 </style>

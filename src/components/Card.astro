@@ -7,9 +7,10 @@ export interface Props {
   badge?: string;
   badgeText?: string;
   date?: string;
+  tags?: string[];
 }
 
-const { href, title, description, cover, badge, badgeText, date } = Astro.props;
+const { href, title, description, cover, badge, badgeText, date, tags = [] } = Astro.props;
 ---
 
 {href ? (
@@ -24,6 +25,13 @@ const { href, title, description, cover, badge, badgeText, date } = Astro.props;
         {badge && <span class="badge">{badgeText || badge}</span>}
         {title && <h3 class="card-title">{title}</h3>}
         {description && <p class="card-desc">{description}</p>}
+        {tags.length > 0 && (
+          <div class="card-tags">
+            {tags.slice(0, 5).map(tag => (
+              <span class="tag">#{tag}</span>
+            ))}
+          </div>
+        )}
         {date && <time class="card-date">{date}</time>}
         <span class="card-arrow">&rarr;</span>
       </div>
@@ -107,6 +115,27 @@ const { href, title, description, cover, badge, badgeText, date } = Astro.props;
     color: var(--text-secondary);
     margin-bottom: var(--space-4);
     line-height: 1.6;
+  }
+
+  .card-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin-bottom: var(--space-3);
+  }
+
+  .card-tags .tag {
+    font-size: var(--text-xs);
+    color: var(--text-secondary);
+    background: var(--bg-base);
+    border: 1px solid var(--bg-border);
+    padding: var(--space-1) var(--space-3);
+    border-radius: var(--radius-sm);
+  }
+
+  .card:hover .card-tags .tag {
+    background: transparent;
+    border-color: transparent;
   }
 
   .card-date {

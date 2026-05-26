@@ -2,10 +2,10 @@
 import Base from '@/layouts/Base.astro';
 import Card from '@/components/Card.astro';
 import SeriesCard from '@/components/SeriesCard.astro';
-import TagCloud from '@/components/TagCloud.astro';
+import DynamicTagFilter from '@/components/DynamicTagFilter.astro';
 import { getCollection } from 'astro:content';
 import { useTranslations, getLocaleFromUrl } from '@/i18n';
-import { getTagStatistics, getStandaloneWorks, aggregateSeriesTags } from '@/utils/tagHelpers';
+import { getStandaloneWorks } from '@/utils/tagHelpers';
 
 const locale = getLocaleFromUrl(Astro.url);
 const t = useTranslations(locale);
@@ -27,8 +27,11 @@ const sortedSeries = allSeries.sort((a, b) => {
   return (b.data.date?.getTime() || 0) - (a.data.date?.getTime() || 0);
 });
 
-// Get tag statistics
-const tagStats = getTagStatistics([], allWorks);
+// 动态计算合集的标签（使用合集自己的独立标签）
+const seriesTags = [...new Set(sortedSeries.flatMap(series => series.data.tags || []))];
+
+// 动态计算作品的标签
+const worksTags = [...new Set(standaloneWorks.flatMap(work => work.data.tags || []))];
 
 const categories = ['frontend', '3d', 'design-tools', 'other'];
 const categoryNames: Record<string, string> = {
@@ -47,53 +50,63 @@ const categoryNames: Record<string, string> = {
         <p class="page-subtitle">{t.works.subtitle}</p>
       </div>
 
-      <div class="filters">
-        <a href="/works" class="filter active">全部</a>
-        <a href="/works/series" class="filter">合集</a>
-        {categories.map(cat => (
-          <a href={`/works/${cat}`} class="filter">{categoryNames[cat]}</a>
-        ))}
-      </div>
-
       <!-- Series Section -->
       {sortedSeries.length > 0 && (
         <section class="series-section">
           <h2 class="section-title">合集</h2>
+          <!-- 合集动态标签过滤器 -->
+          {seriesTags.length > 0 && (
+            <DynamicTagFilter
+              id="works-series-filter"
+              labels={seriesTags}
+              targetType="series"
+              maxVisible={8}
+            />
+          )}
           <div class="series-list">
             {sortedSeries.map(series => (
-              <SeriesCard
-                href={`/works/series/${series.slug}`}
-                title={series.data.title}
-                description={series.data.description}
-                cover={series.data.coverImage}
-                tags={aggregateSeriesTags(series.data.items, allWorks)}
-                itemCount={series.data.items.length}
-              />
+              <div class="content-item"
+                   data-content-type="series"
+                   data-tags={(series.data.tags || []).join(',')}>
+                <SeriesCard
+                  href={`/works/series/${series.slug}`}
+                  title={series.data.title}
+                  description={series.data.description}
+                  cover={series.data.coverImage}
+                  tags={series.data.tags || []}
+                  itemCount={series.data.items.length}
+                />
+              </div>
             ))}
           </div>
-        </section>
-      )}
-
-      <!-- Tag Cloud -->
-      {tagStats.length > 0 && (
-        <section class="tags-section">
-          <h2 class="section-title">标签</h2>
-          <TagCloud stats={tagStats} baseUrl="/works/tags" />
         </section>
       )}
 
       <!-- Standalone Works -->
       <section class="works-section">
         <h2 class="section-title">作品</h2>
+        <!-- 作品动态标签过滤器 -->
+        {worksTags.length > 0 && (
+          <DynamicTagFilter
+            id="works-items-filter"
+            labels={worksTags}
+            targetType="works"
+            maxVisible={8}
+          />
+        )}
         {standaloneWorks.length > 0 ? (
           <div class="grid grid-3">
             {standaloneWorks.map(work => (
-              <Card
-                href={`/works/${work.slug}`}
-                badge={work.data.category}
-                title={work.data.title}
-                description={work.data.description}
-              />
+              <div class="content-item"
+                   data-content-type="works"
+                   data-tags={(work.data.tags || []).join(',')}>
+                <Card
+                  href={`/works/${work.slug}`}
+                  title={work.data.title}
+                  description={work.data.description}
+                  tags={work.data.tags}
+                />
+              </div>
             ))}
           </div>
         ) : (
@@ -149,7 +162,6 @@ const categoryNames: Record<string, string> = {
   }
 
   .series-section,
-  .tags-section,
   .works-section {
     margin-bottom: var(--space-12);
   }
@@ -165,5 +177,29 @@ const categoryNames: Record<string, string> = {
     display: flex;
     flex-direction: column;
     gap: var(--space-4);
+  }
+
+  /* 客户端过滤动画 */
+  .content-item {
+    transition: opacity var(--transition-base), transform var(--transition-base);
+  }
+
+  .content-item.hidden {
+    display: none;
+  }
+
+  .content-item.fade-in {
+    animation: fadeIn var(--transition-base) ease;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 </style>
