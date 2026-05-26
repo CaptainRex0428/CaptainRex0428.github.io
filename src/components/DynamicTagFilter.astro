@@ -5,7 +5,7 @@
 export interface Props {
   id: string; // 过滤器唯一ID
   labels: string[]; // 所有可用的标签
-  targetType: 'series' | 'posts' | 'works'; // 目标内容类型
+  targetType: 'series' | 'posts' | 'works' | 'series-items'; // 目标内容类型
   maxVisible?: number; // 最大显示标签数，超过则隐藏
 }
 
@@ -195,6 +195,7 @@ const hasMore = labels.length > maxVisible;
         // 更新 URL 参数
         const url = new URL(window.location.href);
         const paramKey = targetType === 'series' ? 'series-tag' :
+                        targetType === 'series-items' ? 'series-item-tag' :
                         targetType === 'posts' ? 'posts-tag' : 'works-tag';
 
         if (filter === 'all') {
@@ -211,6 +212,7 @@ const hasMore = labels.length > maxVisible;
     // 页面加载时恢复过滤状态
     const urlParams = new URLSearchParams(window.location.search);
     const paramKey = targetType === 'series' ? 'series-tag' :
+                    targetType === 'series-items' ? 'series-item-tag' :
                     targetType === 'posts' ? 'posts-tag' : 'works-tag';
     const tagParam = urlParams.get(paramKey);
 

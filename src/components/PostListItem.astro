@@ -1,0 +1,155 @@
+---
+export interface Props {
+  href: string;
+  title: string;
+  description: string;
+  cover?: string;
+  tags?: string[];
+  date?: string;
+}
+
+const { href, title, description, cover, tags = [], date } = Astro.props;
+---
+
+<a href={href} class="post-item">
+  <h3 class="post-title">{title}</h3>
+  <div class={`post-row${cover ? '' : ' no-image'}`}>
+    {cover && (
+      <div class="post-cover">
+        <img src={cover} alt={title} />
+      </div>
+    )}
+    <div class="post-content">
+      <p class="post-desc">{description}</p>
+      <div class="post-footer">
+        <div class="post-tags">
+          {tags.slice(0, 4).map(tag => (
+            <span class="tag">#{tag}</span>
+          ))}
+        </div>
+        {date && <time class="post-date">{date}</time>}
+      </div>
+    </div>
+  </div>
+</a>
+
+<style>
+  .post-item {
+    display: flex;
+    flex-direction: column;
+    padding: var(--space-4);
+    background: var(--bg-elevated);
+    border: 1px solid var(--bg-border);
+    border-radius: var(--radius-lg);
+    text-decoration: none;
+    color: inherit;
+    transition: all var(--transition-base);
+  }
+
+  .post-item:hover {
+    border-color: var(--accent);
+    background: var(--accent-glow);
+    transform: translateX(4px);
+  }
+
+  .post-title {
+    font-size: var(--text-lg);
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--space-4);
+    transition: color var(--transition-fast);
+  }
+
+  .post-item:hover .post-title {
+    color: var(--accent);
+  }
+
+  .post-row {
+    display: flex;
+    gap: var(--space-6);
+  }
+
+  .post-row.no-image {
+    flex-direction: column;
+  }
+
+  .post-cover {
+    flex-shrink: 0;
+    width: 160px;
+    aspect-ratio: 1380 / 560;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    background: var(--bg-base);
+  }
+
+  .post-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform var(--transition-slow);
+  }
+
+  .post-item:hover .post-cover img {
+    transform: scale(1.05);
+  }
+
+  .post-content {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .post-desc {
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    margin-bottom: var(--space-3);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .post-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--space-4);
+  }
+
+  .post-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  .post-tags .tag {
+    font-size: var(--text-xs);
+    color: var(--text-secondary);
+    background: var(--bg-base);
+    border: 1px solid var(--bg-border);
+  }
+
+  .post-item:hover .post-tags .tag {
+    background: transparent;
+    border-color: transparent;
+  }
+
+  .post-date {
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+  }
+
+  @media (max-width: 768px) {
+    .post-item {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .post-row {
+      flex-direction: column;
+    }
+
+    .post-cover {
+      width: 100%;
+    }
+  }
+</style>

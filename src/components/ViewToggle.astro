@@ -1,0 +1,128 @@
+---
+const currentView = Astro.url.searchParams.get('view') || 'grid';
+const gridClass = currentView === 'grid' ? 'active' : '';
+const listClass = currentView === 'list' ? 'active' : '';
+---
+
+<div class="view-toggle" data-current-view={currentView}>
+  <button class={`view-btn grid-btn ${gridClass}`} data-view="grid" aria-label="网格视图">
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="3" width="7" height="7"></rect>
+      <rect x="14" y="3" width="7" height="7"></rect>
+      <rect x="14" y="14" width="7" height="7"></rect>
+      <rect x="3" y="14" width="7" height="7"></rect>
+    </svg>
+  </button>
+  <button class={`view-btn list-btn ${listClass}`} data-view="list" aria-label="列表视图">
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="8" y1="6" x2="21" y2="6"></line>
+      <line x1="8" y1="12" x2="21" y2="12"></line>
+      <line x1="8" y1="18" x2="21" y2="18"></line>
+      <line x1="3" y1="6" x2="3.01" y2="6"></line>
+      <line x1="3" y1="12" x2="3.01" y2="12"></line>
+      <line x1="3" y1="18" x2="3.01" y2="18"></line>
+    </svg>
+  </button>
+</div>
+
+<script>
+  // 客户端视图切换逻辑
+  function setupViewToggle() {
+    const container = document.querySelector('.view-toggle');
+    if (!container) return;
+
+    const buttons = container.querySelectorAll('.view-btn');
+    const contentContainer = container.closest('section')?.querySelector('.grid-auto, .posts-list, .works-list, #posts-container, #works-container');
+
+    if (!contentContainer) return;
+
+    // 确定当前页面类型
+    const isBlogPage = contentContainer.id === 'posts-container' || contentContainer.dataset.contentType === 'posts';
+    const listClass = isBlogPage ? 'posts-list' : 'works-list';
+
+    buttons.forEach(button => {
+      button.addEventListener('click', (e) => {
+        e.preventDefault();
+        const view = button.dataset.view;
+        if (!view) return;
+
+        // 更新按钮状态
+        buttons.forEach(btn => btn.classList.remove('active'));
+        button.classList.add('active');
+
+        // 切换容器类名
+        if (view === 'list') {
+          contentContainer.classList.remove('grid-auto');
+          contentContainer.classList.add(listClass);
+        } else {
+          contentContainer.classList.remove(listClass);
+          contentContainer.classList.add('grid-auto');
+        }
+
+        // 保存到 localStorage
+        localStorage.setItem('view-mode', view);
+
+        // 更新 URL（不刷新页面）
+        const url = new URL(window.location);
+        url.searchParams.set('view', view);
+        window.history.pushState({}, '', url);
+      });
+    });
+
+    // 从 localStorage 恢复视图模式
+    const savedView = localStorage.getItem('view-mode');
+    if (savedView && savedView !== 'grid') {
+      const targetButton = container.querySelector(`[data-view="${savedView}"]`);
+      if (targetButton) {
+        targetButton.click();
+      }
+    }
+  }
+
+  // 页面加载后设置
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupViewToggle);
+  } else {
+    setupViewToggle();
+  }
+</script>
+
+<style>
+  .view-toggle {
+    display: flex;
+    gap: var(--space-2);
+    align-items: center;
+  }
+
+  .view-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    padding: var(--space-2);
+    color: var(--text-secondary);
+    background: var(--bg-elevated);
+    border: 1px solid var(--bg-border);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+  }
+
+  .view-btn:hover {
+    color: var(--text-primary);
+    border-color: var(--text-muted);
+    background: var(--bg-base);
+  }
+
+  .view-btn.active {
+    color: var(--accent);
+    border-color: var(--accent);
+    background: var(--accent-glow);
+  }
+
+  .view-btn svg {
+    width: 18px;
+    height: 18px;
+  }
+</style>

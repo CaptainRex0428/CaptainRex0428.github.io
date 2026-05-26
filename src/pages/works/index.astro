@@ -1,14 +1,21 @@
 ---
 import Base from '@/layouts/Base.astro';
 import Card from '@/components/Card.astro';
+import PostListItem from '@/components/PostListItem.astro';
 import SeriesCard from '@/components/SeriesCard.astro';
 import DynamicTagFilter from '@/components/DynamicTagFilter.astro';
+import ViewToggle from '@/components/ViewToggle.astro';
 import { getCollection } from 'astro:content';
 import { useTranslations, getLocaleFromUrl } from '@/i18n';
 import { getStandaloneWorks } from '@/utils/tagHelpers';
+import { getHeroImage } from '@/utils/heroImage';
+import { formatDateShort } from '@/utils/formatDate';
 
 const locale = getLocaleFromUrl(Astro.url);
 const t = useTranslations(locale);
+
+// Get current view mode
+const currentView = Astro.url.searchParams.get('view') || 'grid';
 
 const allWorks = await getCollection('works');
 
@@ -84,7 +91,10 @@ const categoryNames: Record<string, string> = {
 
       <!-- Standalone Works -->
       <section class="works-section">
-        <h2 class="section-title">作品</h2>
+        <div class="section-header">
+          <h2 class="section-title">作品</h2>
+          <ViewToggle />
+        </div>
         <!-- 作品动态标签过滤器 -->
         {worksTags.length > 0 && (
           <DynamicTagFilter
@@ -95,19 +105,36 @@ const categoryNames: Record<string, string> = {
           />
         )}
         {standaloneWorks.length > 0 ? (
-          <div class="grid grid-3">
-            {standaloneWorks.map(work => (
-              <div class="content-item"
-                   data-content-type="works"
-                   data-tags={(work.data.tags || []).join(',')}>
-                <Card
-                  href={`/works/${work.slug}`}
-                  title={work.data.title}
-                  description={work.data.description}
-                  tags={work.data.tags}
-                />
-              </div>
-            ))}
+          <div class="grid-auto" id="works-container" data-content-type="works">
+            {standaloneWorks.map(work => {
+              const heroImg = getHeroImage(work);
+              return (
+                <div class={`content-item${heroImg ? ' has-cover' : ''}`}
+                     data-content-type="works"
+                     data-tags={(work.data.tags || []).join(',')}>
+                  <div class="grid-view-component">
+                    <Card
+                      href={`/works/${work.slug}`}
+                      title={work.data.title}
+                      description={work.data.description}
+                      cover={heroImg}
+                      tags={work.data.tags}
+                      date={formatDateShort(work.data.date)}
+                    />
+                  </div>
+                  <div class="list-view-component">
+                    <PostListItem
+                      href={`/works/${work.slug}`}
+                      title={work.data.title}
+                      description={work.data.description}
+                      cover={heroImg}
+                      tags={work.data.tags}
+                      date={formatDateShort(work.data.date)}
+                    />
+                  </div>
+                </div>
+              );
+            })}
           </div>
         ) : (
           <div class="empty-state">
@@ -120,6 +147,10 @@ const categoryNames: Record<string, string> = {
 </Base>
 
 <style>
+  .grid-auto {
+    align-items: start !important;
+  }
+
   .page-header {
     margin-bottom: var(--space-12);
   }
@@ -166,17 +197,58 @@ const categoryNames: Record<string, string> = {
     margin-bottom: var(--space-12);
   }
 
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-6);
+  }
+
   .section-title {
     font-size: var(--text-xl);
     font-weight: 600;
-    margin-bottom: var(--space-6);
     color: var(--text-primary);
+    margin: 0;
   }
 
   .series-list {
     display: flex;
     flex-direction: column;
     gap: var(--space-4);
+  }
+
+  .works-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+
+  /* 列表视图的内容项样式 */
+  .works-list .content-item {
+    padding: 0;
+    background: transparent;
+    border: none;
+  }
+
+  /* 视图切换：网格视图显示 Card，隐藏 PostListItem */
+  .grid-auto .grid-view-component {
+    display: block;
+  }
+  .grid-auto .list-view-component {
+    display: none;
+  }
+
+  /* 视图切换：列表视图显示 PostListItem，隐藏 Card */
+  .works-list .grid-view-component {
+    display: none;
+  }
+  .works-list .list-view-component {
+    display: block;
+  }
+
+  /* 隐藏状态：整个内容项隐藏 */
+  .content-item.hidden {
+    display: none !important;
   }
 
   /* 客户端过滤动画 */

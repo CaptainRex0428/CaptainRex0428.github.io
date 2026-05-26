@@ -1,15 +1,21 @@
 ---
 import Base from '@/layouts/Base.astro';
 import Card from '@/components/Card.astro';
+import PostListItem from '@/components/PostListItem.astro';
 import SeriesCard from '@/components/SeriesCard.astro';
 import DynamicTagFilter from '@/components/DynamicTagFilter.astro';
+import ViewToggle from '@/components/ViewToggle.astro';
 import { getCollection } from 'astro:content';
 import { useTranslations, getLocaleFromUrl } from '@/i18n';
 import { formatDateShort } from '@/utils/formatDate';
 import { getStandalonePosts } from '@/utils/tagHelpers';
+import { getHeroImage } from '@/utils/heroImage';
 
 const locale = getLocaleFromUrl(Astro.url);
 const t = useTranslations(locale);
+
+// Get current view mode
+const currentView = Astro.url.searchParams.get('view') || 'grid';
 
 const allPosts = await getCollection('blog');
 const publishedPosts = allPosts.filter(post => post.data.published);
@@ -84,7 +90,10 @@ const categoryNames: Record<string, string> = {
 
       <!-- Standalone Posts -->
       <section class="posts-section">
-        <h2 class="section-title">文章</h2>
+        <div class="section-header">
+          <h2 class="section-title">文章</h2>
+          <ViewToggle />
+        </div>
         <!-- 文章动态标签过滤器 -->
         {postsTags.length > 0 && (
           <DynamicTagFilter
@@ -95,20 +104,36 @@ const categoryNames: Record<string, string> = {
           />
         )}
         {standalonePosts.length > 0 ? (
-          <div class="grid grid-2">
-            {standalonePosts.map(post => (
-              <div class="content-item"
-                   data-content-type="posts"
-                   data-tags={(post.data.tags || []).join(',')}>
-                <Card
-                  href={`/blog/${post.slug}`}
-                  title={post.data.title}
-                  description={post.data.description}
-                  tags={post.data.tags}
-                  date={formatDateShort(post.data.date)}
-                />
-              </div>
-            ))}
+          <div class="grid-auto" id="posts-container" data-content-type="posts">
+            {standalonePosts.map(post => {
+              const heroImg = getHeroImage(post);
+              return (
+                <div class={`content-item${heroImg ? ' has-cover' : ''}`}
+                     data-content-type="posts"
+                     data-tags={(post.data.tags || []).join(',')}>
+                  <div class="grid-view-component">
+                    <Card
+                      href={`/blog/${post.slug}`}
+                      title={post.data.title}
+                      description={post.data.description}
+                      cover={heroImg}
+                      tags={post.data.tags}
+                      date={formatDateShort(post.data.date)}
+                    />
+                  </div>
+                  <div class="list-view-component">
+                    <PostListItem
+                      href={`/blog/${post.slug}`}
+                      title={post.data.title}
+                      description={post.data.description}
+                      cover={heroImg}
+                      tags={post.data.tags}
+                      date={formatDateShort(post.data.date)}
+                    />
+                  </div>
+                </div>
+              );
+            })}
           </div>
         ) : (
           <div class="empty-state">
@@ -168,6 +193,26 @@ const categoryNames: Record<string, string> = {
     margin-bottom: var(--space-12);
   }
 
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-6);
+  }
+
+  .section-title {
+    font-size: var(--text-xl);
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+  }
+
+  .posts-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+
   .global-tags {
     margin-top: var(--space-16);
     padding-top: var(--space-8);
@@ -185,6 +230,34 @@ const categoryNames: Record<string, string> = {
     display: flex;
     flex-direction: column;
     gap: var(--space-4);
+  }
+
+  /* 列表视图的内容��样式 */
+  .posts-list .content-item {
+    padding: 0;
+    background: transparent;
+    border: none;
+  }
+
+  /* 视图切换：网格视图显示 Card，隐藏 PostListItem */
+  .grid-auto .grid-view-component {
+    display: block;
+  }
+  .grid-auto .list-view-component {
+    display: none;
+  }
+
+  /* 视图切换：列表视图显示 PostListItem，隐藏 Card */
+  .posts-list .grid-view-component {
+    display: none;
+  }
+  .posts-list .list-view-component {
+    display: block;
+  }
+
+  /* 隐藏状态：整个内容项隐藏 */
+  .content-item.hidden {
+    display: none !important;
   }
 
   /* 客户端过滤动画 */

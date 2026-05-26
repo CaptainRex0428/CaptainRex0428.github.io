@@ -3,31 +3,33 @@ export interface Props {
   href: string;
   title: string;
   description: string;
-  cover: string;
+  cover?: string;
   tags: string[];
   itemCount: number;
 }
 
 const { href, title, description, cover, tags, itemCount } = Astro.props;
+const defaultCover = '/DefaultCover.png';
+const displayCover = cover || defaultCover;
 ---
 
 <a href={href} class="series-card">
   <div class="series-cover">
-    <img src={cover} alt={title} loading="lazy" />
+    <img src={displayCover} alt={title} loading="lazy" />
   </div>
   <div class="series-content">
     <h3 class="series-title">{title}</h3>
     <p class="series-desc">{description}</p>
-    <div class="series-meta">
-      <div class="series-tags">
-        {tags.slice(0, 5).map(tag => (
-          <span class="tag">#{tag}</span>
-        ))}
-        {tags.length > 5 && <span class="tag tag-more">+{tags.length - 5}</span>}
-      </div>
-      <span class="series-count">{itemCount} 篇</span>
+    <div class="series-tags">
+      {tags.slice(0, 5).map(tag => (
+        <span class="tag">#{tag}</span>
+      ))}
+      {tags.length > 5 && <span class="tag tag-more">+{tags.length - 5}</span>}
     </div>
-    <span class="series-arrow">&rarr;</span>
+    <div class="series-footer">
+      <span class="series-count">{itemCount} 篇</span>
+      <span class="series-arrow">&rarr;</span>
+    </div>
   </div>
 </a>
 
@@ -104,7 +106,6 @@ const { href, title, description, cover, tags, itemCount } = Astro.props;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-top: auto;
   }
 
   .series-tags {
@@ -113,14 +114,18 @@ const { href, title, description, cover, tags, itemCount } = Astro.props;
     gap: var(--space-2);
   }
 
-  .tag {
+  .series-tags .tag {
     font-size: var(--text-xs);
-    color: var(--text-muted);
-    transition: color var(--transition-fast);
+    color: var(--text-secondary);
+    background: var(--bg-base);
+    border: 1px solid var(--bg-border);
+    padding: var(--space-1) var(--space-3);
+    border-radius: var(--radius-sm);
   }
 
-  .series-card:hover .tag {
-    color: var(--accent-bright);
+  .series-card:hover .series-tags .tag {
+    background: transparent;
+    border-color: transparent;
   }
 
   .tag-more {
@@ -134,9 +139,11 @@ const { href, title, description, cover, tags, itemCount } = Astro.props;
   }
 
   .series-arrow {
-    position: absolute;
-    bottom: var(--space-6);
-    right: var(--space-6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
     font-size: var(--text-lg);
     color: var(--text-muted);
     transition: all var(--transition-fast);
@@ -147,6 +154,13 @@ const { href, title, description, cover, tags, itemCount } = Astro.props;
     transform: translateX(4px);
   }
 
+  .series-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: var(--space-4);
+  }
+
   @media (max-width: 768px) {
     .series-card {
       flex-direction: column;
@@ -155,11 +169,6 @@ const { href, title, description, cover, tags, itemCount } = Astro.props;
 
     .series-cover {
       width: 100%;
-    }
-
-    .series-arrow {
-      position: static;
-      margin-top: var(--space-4);
     }
   }
 </style>

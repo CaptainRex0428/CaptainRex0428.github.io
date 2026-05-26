@@ -3,6 +3,7 @@
   "type": "module",
   "version": "1.0.0",
   "scripts": {
+    "prebuild": "node scripts/copy-content-images.mjs",
     "dev": "astro dev",
     "start": "astro dev",
     "build": "astro build",

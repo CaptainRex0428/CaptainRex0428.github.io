@@ -1,8 +1,10 @@
 ---
 import Base from '@/layouts/Base.astro';
 import Card from '@/components/Card.astro';
+import DynamicTagFilter from '@/components/DynamicTagFilter.astro';
 import { getCollection } from 'astro:content';
 import { getSeriesWorks } from '@/utils/tagHelpers';
+import { getHeroImage } from '@/utils/heroImage';
 
 export async function getStaticPaths() {
   const allSeries = await getCollection('workSeries');
@@ -15,6 +17,10 @@ export async function getStaticPaths() {
 const { series } = Astro.props;
 const allWorks = await getCollection('works');
 const seriesWorks = getSeriesWorks(series.data.items, allWorks);
+const seriesCover = series.data.coverImage || '/DefaultCover.png';
+
+// 收集合集中所有作品的标签
+const seriesWorksTags = [...new Set(seriesWorks.flatMap(work => work.data.tags || []))];
 ---
 
 <Base title={series.data.title}>
@@ -22,7 +28,7 @@ const seriesWorks = getSeriesWorks(series.data.items, allWorks);
     <div class="container">
       <!-- Series Header -->
       <header class="series-header">
-        <img src={series.data.coverImage} alt={series.data.title} class="series-cover" />
+        <img src={seriesCover} alt={series.data.title} class="series-cover" />
         <div class="series-info">
           <h1 class="series-title">{series.data.title}</h1>
           <p class="series-description">{series.data.description}</p>
@@ -42,20 +48,31 @@ const seriesWorks = getSeriesWorks(series.data.items, allWorks);
 
       <!-- Series Works -->
       <section class="series-works">
+        {seriesWorks.length > 0 && seriesWorksTags.length > 0 && (
+          <DynamicTagFilter
+            id="series-works-filter"
+            labels={seriesWorksTags}
+            targetType="series-items"
+            maxVisible={6}
+          />
+        )}
         {seriesWorks.length > 0 ? (
           <div class="works-list">
             {seriesWorks.map(work => (
-              <a href={`/works/${work.slug}`} class="work-item">
+              <a href={`/works/${work.slug}`} class="work-item" data-content-type="series-items" data-tags={(work.data.tags || []).join(',')}>
                 <h3 class="work-title">{work.data.title}</h3>
-                <div class={`work-row ${work.data.heroImage ? 'has-image' : 'no-image'}`}>
-                  {work.data.heroImage && (
-                    <div class="work-cover">
-                      <img src={work.data.heroImage} alt={work.data.title} />
-                    </div>
-                  )}
+                <div class="work-row">
+                  {(() => {
+                    const heroImg = getHeroImage(work);
+                    return heroImg && (
+                      <div class="work-cover">
+                        <img src={heroImg} alt={work.data.title} />
+                      </div>
+                    );
+                  })()}
                   <div class="work-content">
                     <p class="work-desc">{work.data.description}</p>
-                    <div class="work-meta">
+                    <div class="work-footer">
                       <div class="work-tags">
                         {(work.data.tags || []).slice(0, 5).map(tag => (
                           <span class="tag">#{tag}</span>
@@ -66,7 +83,7 @@ const seriesWorks = getSeriesWorks(series.data.items, allWorks);
                       )}
                     </div>
                   </div>
-                  {work.data.heroImage && <span class="work-arrow">&rarr;</span>}
+                  <span class="work-arrow">&rarr;</span>
                 </div>
               </a>
             ))}
@@ -90,7 +107,7 @@ const seriesWorks = getSeriesWorks(series.data.items, allWorks);
   .series-cover {
     width: 100%;
     max-width: 800px;
-    aspect-ratio: 16 / 9;
+    aspect-ratio: 1380 / 560;
     margin: 0 auto var(--space-8);
     border-radius: var(--radius-lg);
     overflow: hidden;
@@ -162,6 +179,10 @@ const seriesWorks = getSeriesWorks(series.data.items, allWorks);
     gap: var(--space-4);
   }
 
+  .work-item.hidden {
+    display: none;
+  }
+
   .work-item {
     display: flex;
     flex-direction: column;
@@ -200,7 +221,7 @@ const seriesWorks = getSeriesWorks(series.data.items, allWorks);
   .work-cover {
     flex-shrink: 0;
     width: 160px;
-    aspect-ratio: 16 / 9;
+    aspect-ratio: 1380 / 560;
     border-radius: var(--radius-md);
     overflow: hidden;
     background: var(--bg-base);
@@ -254,21 +275,24 @@ const seriesWorks = getSeriesWorks(series.data.items, allWorks);
     border-color: transparent;
   }
 
-  .work-meta {
+  .work-footer {
     display: flex;
     justify-content: space-between;
     align-items: center;
     gap: var(--space-4);
-    margin-top: auto;
   }
 
   .work-date {
     font-size: var(--text-xs);
     color: var(--text-muted);
-    margin-left: auto;
   }
 
   .work-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
     font-size: var(--text-xl);
     color: var(--text-muted);
     transition: all var(--transition-fast);

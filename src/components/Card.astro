@@ -11,6 +11,9 @@ export interface Props {
 }
 
 const { href, title, description, cover, badge, badgeText, date, tags = [] } = Astro.props;
+
+// 一行最多显示 4 个标签
+const limitedTags = tags.slice(0, 4);
 ---
 
 {href ? (
@@ -25,9 +28,9 @@ const { href, title, description, cover, badge, badgeText, date, tags = [] } = A
         {badge && <span class="badge">{badgeText || badge}</span>}
         {title && <h3 class="card-title">{title}</h3>}
         {description && <p class="card-desc">{description}</p>}
-        {tags.length > 0 && (
+        {limitedTags.length > 0 && (
           <div class="card-tags">
-            {tags.slice(0, 5).map(tag => (
+            {limitedTags.map(tag => (
               <span class="tag">#{tag}</span>
             ))}
           </div>
@@ -68,7 +71,7 @@ const { href, title, description, cover, badge, badgeText, date, tags = [] } = A
   }
 
   .card-cover {
-    aspect-ratio: 16 / 9;
+    width: 100%;
     overflow: hidden;
     border-radius: var(--radius-lg);
     margin-bottom: var(--space-4);
@@ -80,6 +83,10 @@ const { href, title, description, cover, badge, badgeText, date, tags = [] } = A
     height: 100%;
     object-fit: cover;
     transition: transform var(--transition-slow);
+  }
+
+  .card:hover .card-cover img {
+    transform: scale(1.05);
   }
 
   .card:hover .card-cover img {
@@ -119,7 +126,8 @@ const { href, title, description, cover, badge, badgeText, date, tags = [] } = A
 
   .card-tags {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+    overflow: hidden;
     gap: var(--space-2);
     margin-bottom: var(--space-3);
   }

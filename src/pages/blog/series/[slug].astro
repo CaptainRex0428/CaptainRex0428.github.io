@@ -1,9 +1,11 @@
 ---
 import Base from '@/layouts/Base.astro';
 import Card from '@/components/Card.astro';
+import DynamicTagFilter from '@/components/DynamicTagFilter.astro';
 import { getCollection } from 'astro:content';
 import { getSeriesPosts } from '@/utils/tagHelpers';
 import { formatDateShort } from '@/utils/formatDate';
+import { getHeroImage } from '@/utils/heroImage';
 
 export async function getStaticPaths() {
   const allSeries = await getCollection('blogSeries');
@@ -16,6 +18,10 @@ export async function getStaticPaths() {
 const { series } = Astro.props;
 const allPosts = await getCollection('blog', ({ data }) => data.published !== false);
 const seriesPosts = getSeriesPosts(series.data.items, allPosts);
+const seriesCover = series.data.coverImage || '/DefaultCover.png';
+
+// 收集合集中所有文章的标签
+const seriesPostsTags = [...new Set(seriesPosts.flatMap(post => post.data.tags || []))];
 ---
 
 <Base title={series.data.title}>
@@ -23,7 +29,7 @@ const seriesPosts = getSeriesPosts(series.data.items, allPosts);
     <div class="container">
       <!-- Series Header -->
       <header class="series-header">
-        <img src={series.data.coverImage} alt={series.data.title} class="series-cover" />
+        <img src={seriesCover} alt={series.data.title} class="series-cover" />
         <div class="series-info">
           <h1 class="series-title">{series.data.title}</h1>
           <p class="series-description">{series.data.description}</p>
@@ -43,20 +49,31 @@ const seriesPosts = getSeriesPosts(series.data.items, allPosts);
 
       <!-- Series Posts -->
       <section class="series-posts">
+        {seriesPosts.length > 0 && seriesPostsTags.length > 0 && (
+          <DynamicTagFilter
+            id="series-posts-filter"
+            labels={seriesPostsTags}
+            targetType="series-items"
+            maxVisible={6}
+          />
+        )}
         {seriesPosts.length > 0 ? (
           <div class="posts-list">
             {seriesPosts.map(post => (
-              <a href={`/blog/${post.slug}`} class="post-item">
+              <a href={`/blog/${post.slug}`} class="post-item" data-content-type="series-items" data-tags={(post.data.tags || []).join(',')}>
                 <h3 class="post-title">{post.data.title}</h3>
-                <div class={`post-row ${post.data.heroImage ? 'has-image' : 'no-image'}`}>
-                  {post.data.heroImage && (
-                    <div class="post-cover">
-                      <img src={post.data.heroImage} alt={post.data.title} />
-                    </div>
-                  )}
+                <div class="post-row">
+                  {(() => {
+                    const heroImg = getHeroImage(post);
+                    return heroImg && (
+                      <div class="post-cover">
+                        <img src={heroImg} alt={post.data.title} />
+                      </div>
+                    );
+                  })()}
                   <div class="post-content">
                     <p class="post-desc">{post.data.description}</p>
-                    <div class="post-meta">
+                    <div class="post-footer">
                       <div class="post-tags">
                         {(post.data.tags || []).slice(0, 5).map(tag => (
                           <span class="tag">#{tag}</span>
@@ -65,7 +82,7 @@ const seriesPosts = getSeriesPosts(series.data.items, allPosts);
                       <time class="post-date">{formatDateShort(post.data.date)}</time>
                     </div>
                   </div>
-                  {post.data.heroImage && <span class="post-arrow">&rarr;</span>}
+                  <span class="post-arrow">&rarr;</span>
                 </div>
               </a>
             ))}
@@ -89,7 +106,7 @@ const seriesPosts = getSeriesPosts(series.data.items, allPosts);
   .series-cover {
     width: 100%;
     max-width: 800px;
-    aspect-ratio: 16 / 9;
+    aspect-ratio: 1380 / 560;
     margin: 0 auto var(--space-8);
     border-radius: var(--radius-lg);
     overflow: hidden;
@@ -161,6 +178,10 @@ const seriesPosts = getSeriesPosts(series.data.items, allPosts);
     gap: var(--space-4);
   }
 
+  .post-item.hidden {
+    display: none;
+  }
+
   .post-item {
     display: flex;
     flex-direction: column;
@@ -199,7 +220,7 @@ const seriesPosts = getSeriesPosts(series.data.items, allPosts);
   .post-cover {
     flex-shrink: 0;
     width: 160px;
-    aspect-ratio: 16 / 9;
+    aspect-ratio: 1380 / 560;
     border-radius: var(--radius-md);
     overflow: hidden;
     background: var(--bg-base);
@@ -235,12 +256,11 @@ const seriesPosts = getSeriesPosts(series.data.items, allPosts);
     overflow: hidden;
   }
 
-  .post-meta {
+  .post-footer {
     display: flex;
     justify-content: space-between;
     align-items: center;
     gap: var(--space-4);
-    margin-top: auto;
   }
 
   .post-tags {
@@ -264,10 +284,14 @@ const seriesPosts = getSeriesPosts(series.data.items, allPosts);
   .post-date {
     font-size: var(--text-xs);
     color: var(--text-muted);
-    margin-left: auto;
   }
 
   .post-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
     font-size: var(--text-xl);
     color: var(--text-muted);
     transition: all var(--transition-fast);

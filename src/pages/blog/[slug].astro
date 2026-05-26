@@ -3,6 +3,7 @@ import Base from '@/layouts/Base.astro';
 import { getCollection } from 'astro:content';
 import { useTranslations, getLocaleFromUrl } from '@/i18n';
 import { formatDate } from '@/utils/formatDate';
+import { getHeroImage } from '@/utils/heroImage';
 
 export async function getStaticPaths() {
   const posts = await getCollection('blog');
@@ -24,6 +25,7 @@ const categories = {
   tools: '工具分享',
   essay: '随笔'
 };
+const heroImage = getHeroImage(post);
 ---
 
 <Base title={post.data.title}>
@@ -52,11 +54,11 @@ const categories = {
       </div>
     </header>
 
-    {post.data.heroImage && (
+    {heroImage && (
       <div class="post-hero">
         <div class="container">
           <img
-            src={post.data.heroImage}
+            src={heroImage}
             alt={post.data.title}
             class="hero-image"
           />

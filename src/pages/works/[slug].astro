@@ -2,6 +2,7 @@
 import Base from '@/layouts/Base.astro';
 import { getCollection } from 'astro:content';
 import { useTranslations, getLocaleFromUrl } from '@/i18n';
+import { getHeroImage } from '@/utils/heroImage';
 
 export async function getStaticPaths() {
   const works = await getCollection('works');
@@ -13,6 +14,7 @@ export async function getStaticPaths() {
 
 const { work } = Astro.props;
 const { Content } = await work.render();
+const heroImage = getHeroImage(work);
 
 const locale = getLocaleFromUrl(Astro.url);
 const t = useTranslations(locale);
@@ -50,11 +52,11 @@ const categories = {
       </div>
     </header>
 
-    {work.data.heroImage && (
+    {heroImage && (
       <div class="work-hero">
         <div class="container">
           <img
-            src={work.data.heroImage}
+            src={heroImage}
             alt={work.data.title}
             class="hero-image"
           />

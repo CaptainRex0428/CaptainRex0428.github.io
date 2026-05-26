@@ -7,6 +7,7 @@ const works = defineCollection({
     category: z.enum(['frontend', '3d', 'design-tools', 'other']),
     tags: z.array(z.string()).default([]),
     heroImage: z.string().optional(),
+    cover: z.string().optional(),
     date: z.date().optional(),
     order: z.number().default(0),
     seriesSlug: z.string().optional(),
@@ -31,7 +32,7 @@ const blogSeries = defineCollection({
   schema: z.object({
     title: z.string(),
     description: z.string(),
-    coverImage: z.string(),
+    coverImage: z.string().optional(),
     items: z.array(z.string()), // 引用的文章 slug 列表
     tags: z.array(z.string()).default([]), // 合集独立的标签
     date: z.date().optional(),
@@ -43,7 +44,7 @@ const workSeries = defineCollection({
   schema: z.object({
     title: z.string(),
     description: z.string(),
-    coverImage: z.string(),
+    coverImage: z.string().optional(),
     items: z.array(z.string()), // 引用的作品 slug 列表
     tags: z.array(z.string()).default([]), // 合集独立的标签
     date: z.date().optional(),

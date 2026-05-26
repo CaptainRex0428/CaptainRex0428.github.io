@@ -5,8 +5,10 @@ category: graphics
 tags: ['次表面散射', 'SSS', 'UE', '实时渲染', '图形学', '预积分']
 date: 2026-03-31
 readTime: 15
-heroImage: "./hero.jpg"
+heroImage: ""
 ---
+
+![效果展示](./faceworks-show.jpg)
 
 在实时渲染中，次表面散射（Subsurface Scattering）是实现皮肤、玉石等半透明材质真实感的关键技术。目前引擎中主流的实时SSS方案主要分为三类：**基于物理计算的实时散射**、**依赖散射剖面（Subsurface Profile）的预计算方法**、以及**屏幕空间次表面散射（SSSS）**。
 
@@ -197,9 +199,3 @@ DeepScatter比较特殊的是需要使用到Lighting.Transmission并通过exp来
 
 该方法特别适合角色渲染和需要高质量次表面效果的场景，是实时渲染中实现真实感半透明材质的有效方案。
 
----
-
-**项目状态**: 已实现
-**发布时间**: 2026-03-31
-**作者**: CaptainRex
-**原文链接**: [知乎专栏 - 图灵技术手记](https://zhuanlan.zhihu.com/p/2017660919023420273)
