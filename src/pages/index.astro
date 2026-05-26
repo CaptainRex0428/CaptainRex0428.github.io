@@ -3,6 +3,7 @@ import Base from '@/layouts/Base.astro';
 import Card from '@/components/Card.astro';
 import { getCollection } from 'astro:content';
 import { useTranslations, getLocaleFromUrl } from '@/i18n';
+import { formatDateShort } from '@/utils/formatDate';
 
 const locale = getLocaleFromUrl(Astro.url);
 const t = useTranslations(locale);
@@ -33,16 +34,19 @@ const latestWorks = allWorks
     <div class="container">
       <div class="hero-content animate-slide-up">
         <h1 class="hero-title">
-          {t.hero.title} <span class="accent">CaptainRex</span>
+          {t.hero.title}
         </h1>
+        <div class="hero-logo-container">
+          <img src="/rex.png" alt="CaptainRex" class="hero-logo" />
+        </div>
         <div class="hero-tags">
           {(Array.isArray(t.hero.subtitle) ? t.hero.subtitle : [t.hero.subtitle]).map((tag: string) => (
             <span class="hero-tag">{tag}</span>
           ))}
         </div>
         <div class="hero-actions">
-          <a href="/works" class="btn btn-primary">{t.hero.cta}</a>
-          <a href="/blog" class="btn btn-secondary">阅读博客</a>
+          <a href="/blog" class="btn btn-primary">阅读博客</a>
+          <a href="/works" class="btn btn-secondary">{t.hero.cta}</a>
         </div>
       </div>
 
@@ -89,7 +93,7 @@ const latestWorks = allWorks
             badge={post.data.category}
             title={post.data.title}
             description={post.data.description}
-            date={post.data.date.toLocaleDateString('zh-CN')}
+            date={formatDateShort(post.data.date)}
           />
         ))}
       </div>
@@ -163,7 +167,19 @@ const latestWorks = allWorks
     font-size: clamp(2.5rem, 5vw, 4rem);
     font-weight: 700;
     line-height: 1.1;
-    margin-bottom: var(--space-4);
+    margin-bottom: var(--space-8);
+  }
+
+  .hero-logo-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: var(--space-8);
+  }
+
+  .hero-logo {
+    height: 200px;
+    width: auto;
+    filter: drop-shadow(0 0 20px rgba(255, 140, 0, 0.3));
   }
 
   .accent {

@@ -1,0 +1,82 @@
+---
+import Base from '@/layouts/Base.astro';
+import Card from '@/components/Card.astro';
+import { getCollection } from 'astro:content';
+import { useTranslations, getLocaleFromUrl } from '@/i18n';
+import { formatDateShort } from '@/utils/formatDate';
+
+export async function getStaticPaths() {
+  const categories = ['frontend', 'graphics', 'tools', 'essay'];
+  return categories.map(category => ({
+    params: { category },
+  }));
+}
+
+const { category } = Astro.params;
+const locale = getLocaleFromUrl(Astro.url);
+const t = useTranslations(locale);
+
+const categoryTitle = t.categories?.[category as keyof typeof t.categories] || category;
+
+const allPosts = await getCollection('blog', ({ data }) => data.published !== false);
+const categoryPosts = allPosts
+  .filter(post => post.data.category === category)
+  .sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+
+const validCategories = ['frontend', 'graphics', 'tools', 'essay'];
+if (!validCategories.includes(category)) {
+  return Astro.redirect('/404');
+}
+---
+
+<Base title={categoryTitle}>
+  <section class="category-page section">
+    <div class="container">
+      <div class="page-header">
+        <h1 class="page-title">{categoryTitle}</h1>
+        <p class="page-subtitle">找到 {categoryPosts.length} 篇文章</p>
+      </div>
+
+      {categoryPosts.length > 0 ? (
+        <div class="posts-grid">
+          {categoryPosts.map(post => (
+            <Card
+              href={`/blog/${post.slug}`}
+              badge={post.data.category}
+              title={post.data.title}
+              description={post.data.description}
+              date={formatDateShort(post.data.date)}
+            />
+          ))}
+        </div>
+      ) : (
+        <div class="empty-state">
+          <p>该分类下暂无文章</p>
+        </div>
+      )}
+    </div>
+  </section>
+</Base>
+
+<style>
+  .page-header {
+    margin-bottom: var(--space-12);
+  }
+
+  .page-title {
+    font-size: var(--text-4xl);
+    font-weight: 700;
+    margin-bottom: var(--space-3);
+  }
+
+  .page-subtitle {
+    font-size: var(--text-lg);
+    color: var(--text-secondary);
+  }
+
+  .posts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: var(--space-6);
+  }
+</style>

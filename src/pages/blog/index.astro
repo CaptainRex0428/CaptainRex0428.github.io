@@ -1,23 +1,41 @@
 ---
 import Base from '@/layouts/Base.astro';
 import Card from '@/components/Card.astro';
+import SeriesCard from '@/components/SeriesCard.astro';
+import TagCloud from '@/components/TagCloud.astro';
 import { getCollection } from 'astro:content';
 import { useTranslations, getLocaleFromUrl } from '@/i18n';
+import { formatDateShort } from '@/utils/formatDate';
+import { getTagStatistics, getStandalonePosts, aggregateSeriesTags } from '@/utils/tagHelpers';
 
 const locale = getLocaleFromUrl(Astro.url);
 const t = useTranslations(locale);
 
 const allPosts = await getCollection('blog');
-const publishedPosts = allPosts
-  .filter(post => post.data.published)
+const publishedPosts = allPosts.filter(post => post.data.published);
+
+// Get series
+const allSeries = await getCollection('blogSeries');
+
+// Get standalone posts (not in series)
+const standalonePosts = getStandalonePosts(publishedPosts)
   .sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+
+// Sort series by order and date
+const sortedSeries = allSeries.sort((a, b) => {
+  if (a.data.order !== b.data.order) return b.data.order - a.data.order;
+  return (b.data.date?.getTime() || 0) - (a.data.date?.getTime() || 0);
+});
+
+// Get tag statistics
+const tagStats = getTagStatistics(publishedPosts, []);
 
 const categories = ['frontend', 'graphics', 'tools', 'essay'];
 const categoryNames: Record<string, string> = {
-  frontend: '全部',
-  graphics: '图形学',
-  tools: '工具',
-  essay: '随笔'
+  frontend: t.categories?.['frontend'] || '前端',
+  graphics: t.categories?.['graphics'] || '图形学',
+  tools: t.categories?.['tools'] || '工具',
+  essay: t.categories?.['essay'] || '随笔',
 };
 ---
 
@@ -31,28 +49,60 @@ const categoryNames: Record<string, string> = {
 
       <div class="filters">
         <a href="/blog" class="filter active">全部</a>
+        <a href="/blog/series" class="filter">合集</a>
         {categories.map(cat => (
-          <a href={`/blog/${cat}`} class="filter">{t.categories[cat as keyof typeof t.categories]}</a>
+          <a href={`/blog/${cat}`} class="filter">{categoryNames[cat]}</a>
         ))}
       </div>
 
-      {publishedPosts.length > 0 ? (
-        <div class="grid grid-2">
-          {publishedPosts.map(post => (
-            <Card
-              href={`/blog/${post.slug}`}
-              badge={post.data.category}
-              title={post.data.title}
-              description={post.data.description}
-              date={post.data.date}
-            />
-          ))}
-        </div>
-      ) : (
-        <div class="empty-state">
-          <p>{t.blog.empty}</p>
-        </div>
+      <!-- Series Section -->
+      {sortedSeries.length > 0 && (
+        <section class="series-section">
+          <h2 class="section-title">合集</h2>
+          <div class="series-list">
+            {sortedSeries.map(series => (
+              <SeriesCard
+                href={`/blog/series/${series.slug}`}
+                title={series.data.title}
+                description={series.data.description}
+                cover={series.data.coverImage}
+                tags={aggregateSeriesTags(series.data.items, publishedPosts)}
+                itemCount={series.data.items.length}
+              />
+            ))}
+          </div>
+        </section>
       )}
+
+      <!-- Tag Cloud -->
+      {tagStats.length > 0 && (
+        <section class="tags-section">
+          <h2 class="section-title">标签</h2>
+          <TagCloud stats={tagStats} baseUrl="/blog/tags" />
+        </section>
+      )}
+
+      <!-- Standalone Posts -->
+      <section class="posts-section">
+        <h2 class="section-title">文章</h2>
+        {standalonePosts.length > 0 ? (
+          <div class="grid grid-2">
+            {standalonePosts.map(post => (
+              <Card
+                href={`/blog/${post.slug}`}
+                badge={post.data.category}
+                title={post.data.title}
+                description={post.data.description}
+                date={formatDateShort(post.data.date)}
+              />
+            ))}
+          </div>
+        ) : (
+          <div class="empty-state">
+            <p>{t.blog.empty}</p>
+          </div>
+        )}
+      </section>
     </div>
   </section>
 </Base>
@@ -97,5 +147,24 @@ const categoryNames: Record<string, string> = {
     color: var(--accent);
     border-color: var(--accent);
     background: var(--accent-glow);
+  }
+
+  .series-section,
+  .tags-section,
+  .posts-section {
+    margin-bottom: var(--space-12);
+  }
+
+  .section-title {
+    font-size: var(--text-xl);
+    font-weight: 600;
+    margin-bottom: var(--space-6);
+    color: var(--text-primary);
+  }
+
+  .series-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
   }
 </style>

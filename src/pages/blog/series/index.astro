@@ -1,0 +1,71 @@
+---
+import Base from '@/layouts/Base.astro';
+import SeriesCard from '@/components/SeriesCard.astro';
+import { getCollection } from 'astro:content';
+import { useTranslations, getLocaleFromUrl } from '@/i18n';
+import { aggregateSeriesTags } from '@/utils/tagHelpers';
+
+const locale = getLocaleFromUrl(Astro.url);
+const t = useTranslations(locale);
+
+const allSeries = await getCollection('blogSeries');
+const allPosts = await getCollection('blog', ({ data }) => data.published !== false);
+
+const sortedSeries = allSeries.sort((a, b) => {
+  if (a.data.order !== b.data.order) return b.data.order - a.data.order;
+  return (b.data.date?.getTime() || 0) - (a.data.date?.getTime() || 0);
+});
+---
+
+<Base title="博客合集">
+  <section class="series-page section">
+    <div class="container">
+      <div class="page-header animate-slide-up">
+        <h1 class="page-title">博客合集</h1>
+        <p class="page-subtitle">系列文章和专题内容</p>
+      </div>
+
+      {sortedSeries.length > 0 ? (
+        <div class="series-list">
+          {sortedSeries.map(series => (
+            <SeriesCard
+              href={`/blog/series/${series.slug}`}
+              title={series.data.title}
+              description={series.data.description}
+              cover={series.data.coverImage}
+              tags={aggregateSeriesTags(series.data.items, allPosts)}
+              itemCount={series.data.items.length}
+            />
+          ))}
+        </div>
+      ) : (
+        <div class="empty-state">
+          <p>暂无合集</p>
+        </div>
+      )}
+    </div>
+  </section>
+</Base>
+
+<style>
+  .page-header {
+    margin-bottom: var(--space-12);
+  }
+
+  .page-title {
+    font-size: var(--text-4xl);
+    font-weight: 700;
+    margin-bottom: var(--space-3);
+  }
+
+  .page-subtitle {
+    font-size: var(--text-lg);
+    color: var(--text-secondary);
+  }
+
+  .series-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+  }
+</style>

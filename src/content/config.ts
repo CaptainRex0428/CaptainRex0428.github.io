@@ -10,6 +10,7 @@ const works = defineCollection({
     date: z.date().optional(),
     featured: z.boolean().default(false),
     order: z.number().default(0),
+    seriesSlug: z.string().optional(),
   }),
 });
 
@@ -23,7 +24,32 @@ const blog = defineCollection({
     date: z.date(),
     readTime: z.number().optional(),
     published: z.boolean().default(true),
+    seriesSlug: z.string().optional(),
   }),
 });
 
-export const collections = { works, blog };
+const blogSeries = defineCollection({
+  schema: z.object({
+    title: z.string(),
+    description: z.string(),
+    coverImage: z.string(),
+    items: z.array(z.string()),
+    date: z.date().optional(),
+    featured: z.boolean().default(false),
+    order: z.number().default(0),
+  }),
+});
+
+const workSeries = defineCollection({
+  schema: z.object({
+    title: z.string(),
+    description: z.string(),
+    coverImage: z.string(),
+    items: z.array(z.string()),
+    date: z.date().optional(),
+    featured: z.boolean().default(false),
+    order: z.number().default(0),
+  }),
+});
+
+export const collections = { works, blog, blogSeries, workSeries };

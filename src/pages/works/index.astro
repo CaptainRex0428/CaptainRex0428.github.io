@@ -1,21 +1,42 @@
 ---
 import Base from '@/layouts/Base.astro';
 import Card from '@/components/Card.astro';
+import SeriesCard from '@/components/SeriesCard.astro';
+import TagCloud from '@/components/TagCloud.astro';
 import { getCollection } from 'astro:content';
 import { useTranslations, getLocaleFromUrl } from '@/i18n';
+import { getTagStatistics, getStandaloneWorks, aggregateSeriesTags } from '@/utils/tagHelpers';
 
 const locale = getLocaleFromUrl(Astro.url);
 const t = useTranslations(locale);
 
 const allWorks = await getCollection('works');
-const sortedWorks = allWorks.sort((a, b) => {
-  if (a.data.order !== b.data.order) {
-    return b.data.order - a.data.order;
-  }
+
+// Get series
+const allSeries = await getCollection('workSeries');
+
+// Get standalone works (not in series)
+const standaloneWorks = getStandaloneWorks(allWorks).sort((a, b) => {
+  if (a.data.order !== b.data.order) return b.data.order - a.data.order;
   return (b.data.date?.getTime() || 0) - (a.data.date?.getTime() || 0);
 });
 
+// Sort series by order and date
+const sortedSeries = allSeries.sort((a, b) => {
+  if (a.data.order !== b.data.order) return b.data.order - a.data.order;
+  return (b.data.date?.getTime() || 0) - (a.data.date?.getTime() || 0);
+});
+
+// Get tag statistics
+const tagStats = getTagStatistics([], allWorks);
+
 const categories = ['frontend', '3d', 'design-tools', 'other'];
+const categoryNames: Record<string, string> = {
+  frontend: t.categories?.['frontend'] || '前端',
+  '3d': t.categories?.['3d'] || '3D',
+  'design-tools': t.categories?.['design-tools'] || '设计工具',
+  other: t.categories?.['other'] || '其他',
+};
 ---
 
 <Base title={t.works.title}>
@@ -28,27 +49,59 @@ const categories = ['frontend', '3d', 'design-tools', 'other'];
 
       <div class="filters">
         <a href="/works" class="filter active">全部</a>
+        <a href="/works/series" class="filter">合集</a>
         {categories.map(cat => (
-          <a href={`/works/${cat}`} class="filter">{t.categories[cat as keyof typeof t.categories]}</a>
+          <a href={`/works/${cat}`} class="filter">{categoryNames[cat]}</a>
         ))}
       </div>
 
-      {sortedWorks.length > 0 ? (
-        <div class="grid grid-3">
-          {sortedWorks.map(work => (
-            <Card
-              href={`/works/${work.slug}`}
-              badge={work.data.category}
-              title={work.data.title}
-              description={work.data.description}
-            />
-          ))}
-        </div>
-      ) : (
-        <div class="empty-state">
-          <p>{t.works.empty}</p>
-        </div>
+      <!-- Series Section -->
+      {sortedSeries.length > 0 && (
+        <section class="series-section">
+          <h2 class="section-title">合集</h2>
+          <div class="series-list">
+            {sortedSeries.map(series => (
+              <SeriesCard
+                href={`/works/series/${series.slug}`}
+                title={series.data.title}
+                description={series.data.description}
+                cover={series.data.coverImage}
+                tags={aggregateSeriesTags(series.data.items, allWorks)}
+                itemCount={series.data.items.length}
+              />
+            ))}
+          </div>
+        </section>
       )}
+
+      <!-- Tag Cloud -->
+      {tagStats.length > 0 && (
+        <section class="tags-section">
+          <h2 class="section-title">标签</h2>
+          <TagCloud stats={tagStats} baseUrl="/works/tags" />
+        </section>
+      )}
+
+      <!-- Standalone Works -->
+      <section class="works-section">
+        <h2 class="section-title">作品</h2>
+        {standaloneWorks.length > 0 ? (
+          <div class="grid grid-3">
+            {standaloneWorks.map(work => (
+              <Card
+                href={`/works/${work.slug}`}
+                badge={work.data.category}
+                title={work.data.title}
+                description={work.data.description}
+              />
+            ))}
+          </div>
+        ) : (
+          <div class="empty-state">
+            <p>{t.works.empty}</p>
+          </div>
+        )}
+      </section>
     </div>
   </section>
 </Base>
@@ -93,5 +146,24 @@ const categories = ['frontend', '3d', 'design-tools', 'other'];
     color: var(--accent);
     border-color: var(--accent);
     background: var(--accent-glow);
+  }
+
+  .series-section,
+  .tags-section,
+  .works-section {
+    margin-bottom: var(--space-12);
+  }
+
+  .section-title {
+    font-size: var(--text-xl);
+    font-weight: 600;
+    margin-bottom: var(--space-6);
+    color: var(--text-primary);
+  }
+
+  .series-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
   }
 </style>

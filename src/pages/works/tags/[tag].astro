@@ -1,0 +1,83 @@
+---
+import Base from '@/layouts/Base.astro';
+import Card from '@/components/Card.astro';
+import { getCollection } from 'astro:content';
+import { getTagStatistics } from '@/utils/tagHelpers';
+
+export async function getStaticPaths() {
+  const allWorks = await getCollection('works');
+  const uniqueTags = [...new Set(allWorks.flatMap(work => work.data.tags || []))];
+  return uniqueTags.map(tag => ({
+    params: { tag },
+  }));
+}
+
+const { tag } = Astro.params;
+const decodedTag = decodeURIComponent(tag);
+
+const allWorks = await getCollection('works');
+const tagStats = getTagStatistics([], allWorks);
+
+const worksWithTag = allWorks.filter(work =>
+  work.data.tags?.includes(decodedTag)
+).sort((a, b) => {
+  if (a.data.order !== b.data.order) return b.data.order - a.data.order;
+  return (b.data.date?.getTime() || 0) - (a.data.date?.getTime() || 0);
+});
+
+const tagStat = tagStats.find(s => s.name === decodedTag);
+---
+
+<Base title={`标签：${decodedTag}`}>
+  <section class="tag-page section">
+    <div class="container">
+      <div class="page-header">
+        <h1 class="page-title">标签：{decodedTag}</h1>
+        <p class="page-subtitle">
+          找到 {worksWithTag.length} 个作品
+          {tagStat && ` · 该标签共 ${tagStat.count} 个内容`}
+        </p>
+      </div>
+
+      {worksWithTag.length > 0 ? (
+        <div class="works-grid">
+          {worksWithTag.map(work => (
+            <Card
+              href={`/works/${work.slug}`}
+              badge={work.data.category}
+              title={work.data.title}
+              description={work.data.description}
+            />
+          ))}
+        </div>
+      ) : (
+        <div class="empty-state">
+          <p>该标签下暂无作品</p>
+        </div>
+      )}
+    </div>
+  </section>
+</Base>
+
+<style>
+  .page-header {
+    margin-bottom: var(--space-12);
+  }
+
+  .page-title {
+    font-size: var(--text-4xl);
+    font-weight: 700;
+    margin-bottom: var(--space-3);
+  }
+
+  .page-subtitle {
+    font-size: var(--text-lg);
+    color: var(--text-secondary);
+  }
+
+  .works-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: var(--space-6);
+  }
+</style>

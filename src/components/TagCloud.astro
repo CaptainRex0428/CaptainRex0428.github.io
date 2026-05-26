@@ -1,0 +1,134 @@
+---
+import type { TagStat } from '@/utils/tagHelpers';
+
+export interface Props {
+  stats: TagStat[];
+  baseUrl?: string;
+  maxVisible?: number;
+}
+
+const { stats, baseUrl = '/blog/tags', maxVisible = 20 } = Astro.props;
+const visibleStats = stats.slice(0, maxVisible);
+const hasMore = stats.length > maxVisible;
+---
+
+<div class="tag-cloud">
+  <div class="tag-list" class:list={{ 'has-more': hasMore }}>
+    {visibleStats.map(stat => (
+      <a href={`${baseUrl}/${encodeURIComponent(stat.name)}`} class="tag-item">
+        <span class="tag-name">#{stat.name}</span>
+        <span class="tag-count">[{stat.count}]</span>
+      </a>
+    ))}
+  </div>
+  {hasMore && (
+    <button class="expand-btn" data-expanded="false">
+      <span class="expand-text">展开更多 ({stats.length - maxVisible})</span>
+      <svg class="expand-icon" viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+        <path d="M7 10l5 5 5-5z"/>
+      </svg>
+    </button>
+  )}
+</div>
+
+<style>
+  .tag-cloud {
+    margin-bottom: var(--space-8);
+  }
+
+  .tag-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  .tag-list.hidden {
+    display: none;
+  }
+
+  .tag-item {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    padding: var(--space-1) var(--space-3);
+    font-size: var(--text-xs);
+    color: var(--text-secondary);
+    background: var(--bg-elevated);
+    border: 1px solid var(--bg-border);
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    transition: all var(--transition-fast);
+  }
+
+  .tag-item:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+    background: var(--accent-glow);
+  }
+
+  .tag-name {
+    font-weight: 500;
+  }
+
+  .tag-count {
+    color: var(--text-muted);
+  }
+
+  .tag-item:hover .tag-count {
+    color: var(--accent-bright);
+  }
+
+  .expand-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    margin-top: var(--space-3);
+    padding: var(--space-2) var(--space-4);
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    background: transparent;
+    border: 1px dashed var(--bg-border);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+  }
+
+  .expand-btn:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+    border-style: solid;
+  }
+
+  .expand-btn[data-expanded="true"] {
+    display: none;
+  }
+
+  .expand-icon {
+    transition: transform 0.2s ease;
+  }
+
+  .expand-btn:hover .expand-icon {
+    transform: rotate(180deg);
+  }
+</style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const expandBtn = document.querySelector('.expand-btn');
+    const tagList = document.querySelector('.tag-list');
+
+    if (expandBtn && tagList) {
+      expandBtn.addEventListener('click', () => {
+        tagList.classList.toggle('hidden');
+        const isExpanded = tagList.classList.contains('hidden');
+        expandBtn.setAttribute('data-expanded', isExpanded ? 'false' : 'true');
+        const expandText = expandBtn.querySelector('.expand-text');
+        if (expandText) {
+          expandText.textContent = isExpanded
+            ? `展开更多`
+            : '收起';
+        }
+      });
+    }
+  });
+</script>

@@ -1,0 +1,105 @@
+---
+export interface Props {
+  tags: string[];
+  maxVisible?: number;
+  baseUrl?: string;
+}
+
+const { tags, maxVisible = 5, baseUrl = '/blog/tags' } = Astro.props;
+const visibleTags = tags.slice(0, maxVisible);
+const hiddenCount = tags.length - maxVisible;
+const hasMore = tags.length > maxVisible;
+---
+
+<div class="expand-tags">
+  <div class="tags-container">
+    {visibleTags.map(tag => (
+      <a href={`${baseUrl}/${encodeURIComponent(tag)}`} class="tag">#{tag}</a>
+    ))}
+    {hasMore && (
+      <button class="more-tags" data-expanded="false">
+        <span class="more-text">+{hiddenCount} 更多</span>
+      </button>
+    )}
+  </div>
+  {hasMore && (
+    <div class="all-tags hidden">
+      {tags.slice(maxVisible).map(tag => (
+        <a href={`${baseUrl}/${encodeURIComponent(tag)}`} class="tag">#{tag}</a>
+      ))}
+    </div>
+  )}
+</div>
+
+<style>
+  .expand-tags {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .tags-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    align-items: center;
+  }
+
+  .tag {
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: color var(--transition-fast);
+  }
+
+  .tag:hover {
+    color: var(--accent);
+  }
+
+  .more-tags {
+    padding: var(--space-1) var(--space-3);
+    font-size: var(--text-sm);
+    color: var(--text-muted);
+    background: transparent;
+    border: 1px dashed var(--bg-border);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+  }
+
+  .more-tags:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+    border-style: solid;
+  }
+
+  .all-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  .all-tags.hidden {
+    display: none;
+  }
+</style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const moreBtn = document.querySelector('.more-tags');
+    const allTags = document.querySelector('.all-tags');
+
+    if (moreBtn && allTags) {
+      moreBtn.addEventListener('click', () => {
+        const isExpanded = moreBtn.getAttribute('data-expanded') === 'true';
+        moreBtn.setAttribute('data-expanded', isExpanded ? 'false' : 'true');
+        allTags.classList.toggle('hidden', isExpanded);
+
+        const moreText = moreBtn.querySelector('.more-text');
+        if (moreText) {
+          moreText.textContent = isExpanded ? `+${hiddenCount} 更多` : '收起';
+        }
+      });
+    }
+  });
+</script>

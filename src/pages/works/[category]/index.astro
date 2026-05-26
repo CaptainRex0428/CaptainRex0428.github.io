@@ -1,0 +1,83 @@
+---
+import Base from '@/layouts/Base.astro';
+import Card from '@/components/Card.astro';
+import { getCollection } from 'astro:content';
+import { useTranslations, getLocaleFromUrl } from '@/i18n';
+
+export async function getStaticPaths() {
+  const categories = ['frontend', '3d', 'design-tools', 'other'];
+  return categories.map(category => ({
+    params: { category },
+  }));
+}
+
+const { category } = Astro.params;
+const locale = getLocaleFromUrl(Astro.url);
+const t = useTranslations(locale);
+
+const categoryTitle = t.categories?.[category as keyof typeof t.categories] || category;
+
+const allWorks = await getCollection('works');
+const categoryWorks = allWorks
+  .filter(work => work.data.category === category)
+  .sort((a, b) => {
+    if (a.data.order !== b.data.order) return b.data.order - a.data.order;
+    return (b.data.date?.getTime() || 0) - (a.data.date?.getTime() || 0);
+  });
+
+const validCategories = ['frontend', '3d', 'design-tools', 'other'];
+if (!validCategories.includes(category)) {
+  return Astro.redirect('/404');
+}
+---
+
+<Base title={categoryTitle}>
+  <section class="category-page section">
+    <div class="container">
+      <div class="page-header">
+        <h1 class="page-title">{categoryTitle}</h1>
+        <p class="page-subtitle">找到 {categoryWorks.length} 个作品</p>
+      </div>
+
+      {categoryWorks.length > 0 ? (
+        <div class="works-grid">
+          {categoryWorks.map(work => (
+            <Card
+              href={`/works/${work.slug}`}
+              badge={work.data.category}
+              title={work.data.title}
+              description={work.data.description}
+            />
+          ))}
+        </div>
+      ) : (
+        <div class="empty-state">
+          <p>该分类下暂无作品</p>
+        </div>
+      )}
+    </div>
+  </section>
+</Base>
+
+<style>
+  .page-header {
+    margin-bottom: var(--space-12);
+  }
+
+  .page-title {
+    font-size: var(--text-4xl);
+    font-weight: 700;
+    margin-bottom: var(--space-3);
+  }
+
+  .page-subtitle {
+    font-size: var(--text-lg);
+    color: var(--text-secondary);
+  }
+
+  .works-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: var(--space-6);
+  }
+</style>
