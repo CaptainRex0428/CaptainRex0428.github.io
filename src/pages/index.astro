@@ -1,10 +1,30 @@
 ---
 import Base from '@/layouts/Base.astro';
 import Card from '@/components/Card.astro';
+import { getCollection } from 'astro:content';
 import { useTranslations, getLocaleFromUrl } from '@/i18n';
 
 const locale = getLocaleFromUrl(Astro.url);
 const t = useTranslations(locale);
+
+// 获取最新的 3 篇博客（按日期降序）
+const allPosts = await getCollection('blog', ({ data }) => {
+  return data.published !== false;
+});
+const latestPosts = allPosts
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
+  .slice(0, 3);
+
+// 获取最新的 3 个作品（按 order 和日期排序）
+const allWorks = await getCollection('works');
+const latestWorks = allWorks
+  .sort((a, b) => {
+    if (a.data.order !== b.data.order) {
+      return b.data.order - a.data.order;
+    }
+    return (b.data.date?.valueOf() || 0) - (a.data.date?.valueOf() || 0);
+  })
+  .slice(0, 3);
 ---
 
 <Base title={t.hero.title}>
@@ -42,25 +62,14 @@ const t = useTranslations(locale);
       </div>
 
       <div class="grid grid-3">
-        <!-- 示例卡片，将替换为真实数据 -->
-        <Card
-          href="/works/frontend"
-          badge="frontend"
-          title="WebGL 粒子系统"
-          description="使用 Three.js 构建的交互式粒子效果，支持自定义参数和实时渲染。"
-        />
-        <Card
-          href="/works/3d"
-          badge="3d"
-          title="3D 产品展示台"
-          description="基于 WebGL 的 3D 产品展示方案，支持多角度查看和材质切换。"
-        />
-        <Card
-          href="/works/design-tools"
-          badge="design-tools"
-          title="设计工具合集"
-          description="一系列提升设计效率的小工具，包含颜色转换、渐变生成等功能。"
-        />
+        {latestWorks.map(work => (
+          <Card
+            href={`/works/${work.slug}`}
+            badge={work.data.category}
+            title={work.data.title}
+            description={work.data.description}
+          />
+        ))}
       </div>
     </div>
   </section>
@@ -74,20 +83,15 @@ const t = useTranslations(locale);
       </div>
 
       <div class="grid grid-2">
-        <Card
-          href="/blog/frontend"
-          badge="frontend"
-          title="Three.js 进阶：性能优化实战"
-          description="深入探讨 Three.js 项目中的性能瓶颈及优化策略，包括几何体合并、纹理压缩等技术。"
-          date="2026-01-15"
-        />
-        <Card
-          href="/blog/graphics"
-          badge="graphics"
-          title="WebGL 着色器入门指南"
-          description="从零开始学习 GLSL 着色器编程，理解顶点着色器和片元着色器的工作原理。"
-          date="2026-01-08"
-        />
+        {latestPosts.map(post => (
+          <Card
+            href={`/blog/${post.slug}`}
+            badge={post.data.category}
+            title={post.data.title}
+            description={post.data.description}
+            date={post.data.date.toLocaleDateString('zh-CN')}
+          />
+        ))}
       </div>
     </div>
   </section>
@@ -270,13 +274,6 @@ const t = useTranslations(locale);
   .social-btn .social-btn-icon {
     height: 32px;
     width: auto;
-  }
-
-  .social-btn:hover {
-    border-color: var(--accent);
-    color: var(--accent);
-    background: var(--accent-glow);
-  }
   }
 
   .social-btn:hover {

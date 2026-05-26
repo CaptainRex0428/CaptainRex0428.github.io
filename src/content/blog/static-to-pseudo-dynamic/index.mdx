@@ -1,0 +1,90 @@
+---
+title: "构建个人博客：从静态到伪动态"
+description: "探索如何使用 Astro 构建一个自动更新的个人博客系统，实现静态网站的内容动态管理。"
+category: tools
+tags: ['Astro', '静态网站', 'GitHub Actions', '自动化']
+date: 2026-05-26
+readTime: 8
+---
+
+## 前言
+
+很多人认为静态网站就意味着"手动更新每个页面"，但实际上，现代静态网站生成器（如 Astro）可以实现"伪动态"功能——内容更新后自动触发构建，首页和列表页自动显示最新内容。
+
+## 什么是"伪动态"？
+
+传统动态网站每次用户访问时都会查询数据库，而"伪动态"网站则是在**内容更新时**一次性生成所有页面：
+
+```
+传统动态：用户访问 → 查询数据库 → 生成页面 → 返回
+伪动态：内容更新 → 构建时读取数据 → 生成静态页面 → CDN 缓存
+```
+
+### 优势对比
+
+| 特性 | 传统动态 | 伪动态 |
+|------|---------|--------|
+| 访问速度 | 较慢（数据库查询） | 极快（静态文件） |
+| 服务器成本 | 需要付费服务器 | 免费（GitHub Pages） |
+| 实时性 | 立即生效 | 推送后 1-2 分钟 |
+
+## 实现原理
+
+### 1. 内容管理
+
+使用 Astro 的 Content Collections 管理 Markdown 文件：
+
+```typescript
+// src/content/config.ts
+const blog = defineCollection({
+  schema: z.object({
+    title: z.string(),
+    date: z.date(),
+    published: z.boolean().default(true),
+  }),
+});
+```
+
+### 2. 首页自动更新
+
+```astro
+---
+// src/pages/index.astro
+const allPosts = await getCollection('blog');
+const latestPosts = allPosts
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
+  .slice(0, 3);
+---
+
+{latestPosts.map(post => (
+  <Card title={post.data.title} />
+))}
+```
+
+### 3. 自动部署
+
+```yaml
+# .github/workflows/deploy.yml
+on:
+  push:
+    branches: [master]
+
+jobs:
+  build:
+    steps:
+      - run: npm run build
+      - uses: actions/deploy-pages@v4
+```
+
+## 工作流程
+
+完整的更新流程：
+
+1. 在 `src/content/blog/` 新建 Markdown 文件
+2. Push 到 GitHub
+3. GitHub Actions 自动触发构建（约 1 分钟）
+4. 首页自动显示最新 3 篇博客
+
+## 总结
+
+"伪动态"结合了静态网站的性能优势和动态网站的内容管理便利性，非常适合博客、作品集等更新频率较低但需要快速加载的场景。
