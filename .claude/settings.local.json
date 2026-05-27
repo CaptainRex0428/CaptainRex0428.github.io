@@ -1,24 +1,12 @@
 {
   "permissions": {
     "allow": [
-      "Bash(cd:*)",
-      "Bash(head:*)",
-      "Bash(tail:*)",
-      "Bash(node download-zhihu-images.js)",
-      "Bash(node download-zhihu-images.mjs)",
+      "Bash(npm run *)",
+      "Bash(node *)",
       "Bash(gh api *)",
       "Bash(gh run *)",
       "Bash(gh auth *)",
-      "Bash(npm run *)",
-      "Bash(node *)",
-      "Bash(curl -s http://localhost:4322/works)",
-      "Bash(curl -s http://localhost:4324/)",
-      "Bash(curl -s http://localhost:4324/blog)",
-      "Bash(curl -s http://localhost:4324/works)",
-      "Bash(curl -s http://localhost:4321/blog)",
-      "Bash(curl -s http://localhost:4321/works)",
-      "Bash(grep -E \"\\\\.astro$\")",
-      "Bash(curl -s \"http://localhost:4321/blog?view=list\")"
+      "Bash(cd:*)"
     ]
   }
 }
