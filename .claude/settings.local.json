@@ -6,7 +6,8 @@
       "Bash(gh api *)",
       "Bash(gh run *)",
       "Bash(gh auth *)",
-      "Bash(cd:*)"
+      "Bash(cd:*)",
+      "Bash(curl:*)"
     ]
   }
 }

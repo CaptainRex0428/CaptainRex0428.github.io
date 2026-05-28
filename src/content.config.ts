@@ -1,6 +1,9 @@
 import { defineCollection, z } from 'astro:content';
+import { glob } from 'astro/loaders';
 
+// Works collection - 3D/WebGL 前端作品
 const works = defineCollection({
+  loader: glob({ pattern: '**/*.{md,mdx}', base: './src/content/works' }),
   schema: z.object({
     title: z.string(),
     description: z.string(),
@@ -14,7 +17,9 @@ const works = defineCollection({
   }),
 });
 
+// Blog collection - 技术博客
 const blog = defineCollection({
+  loader: glob({ pattern: '**/*.{md,mdx}', base: './src/content/blog' }),
   schema: z.object({
     title: z.string(),
     description: z.string(),
@@ -28,7 +33,9 @@ const blog = defineCollection({
   }),
 });
 
+// Blog Series - 博客合集
 const blogSeries = defineCollection({
+  loader: glob({ pattern: '**/*.{md,mdx}', base: './src/content/blogSeries' }),
   schema: z.object({
     title: z.string(),
     description: z.string(),
@@ -40,7 +47,9 @@ const blogSeries = defineCollection({
   }),
 });
 
+// Work Series - 作品合集
 const workSeries = defineCollection({
+  loader: glob({ pattern: '**/*.{md,mdx}', base: './src/content/workSeries' }),
   schema: z.object({
     title: z.string(),
     description: z.string(),

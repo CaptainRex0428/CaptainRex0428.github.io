@@ -27,10 +27,12 @@ export function getHeroImage(
       return path;
     }
   }
-  // 检查文件夹中是否有 hero.png
-  const heroPath = join('public', entry.collection, entry.slug, 'hero.png');
-  if (existsSync(heroPath)) {
-    return `/${entry.collection}/${entry.slug}/hero.png`;
+  // 检查文件夹中是否有 hero.png（只有在 slug 存在时才检查���
+  if (entry.slug) {
+    const heroPath = join('public', entry.collection, entry.slug, 'hero.png');
+    if (existsSync(heroPath)) {
+      return `/${entry.collection}/${entry.slug}/hero.png`;
+    }
   }
   return undefined;
 }

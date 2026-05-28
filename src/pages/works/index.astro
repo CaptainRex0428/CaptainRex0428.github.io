@@ -19,11 +19,24 @@ const currentView = Astro.url.searchParams.get('view') || 'grid';
 
 const allWorks = await getCollection('works');
 
+// 修复 slug 生成问题（如果 slug 是 undefined，则从 id 生成）
+const worksWithFixedSlugs = allWorks.map(work => {
+  if (!work.slug && work.id) {
+    // 从 id 生成 slug
+    let slug = work.id.replace(/\.(md|mdx)$/, '');
+    if (slug.endsWith('/index')) {
+      slug = slug.replace('/index', '');
+    }
+    return { ...work, slug };
+  }
+  return work;
+});
+
 // Get series
 const allSeries = await getCollection('workSeries');
 
 // Get standalone works (not in series)
-const standaloneWorks = getStandaloneWorks(allWorks).sort((a, b) => {
+const standaloneWorks = getStandaloneWorks(worksWithFixedSlugs).sort((a, b) => {
   if (a.data.order !== b.data.order) return b.data.order - a.data.order;
   return (b.data.date?.getTime() || 0) - (a.data.date?.getTime() || 0);
 });

@@ -20,11 +20,24 @@ const currentView = Astro.url.searchParams.get('view') || 'grid';
 const allPosts = await getCollection('blog');
 const publishedPosts = allPosts.filter(post => post.data.published);
 
+// 修复 slug 生成问题（如果 slug 是 undefined，则从 id 生成）
+const postsWithFixedSlugs = publishedPosts.map(post => {
+  if (!post.slug && post.id) {
+    // 从 id 生成 slug
+    let slug = post.id.replace(/\.(md|mdx)$/, '');
+    if (slug.endsWith('/index')) {
+      slug = slug.replace('/index', '');
+    }
+    return { ...post, slug };
+  }
+  return post;
+});
+
 // Get series
 const allSeries = await getCollection('blogSeries');
 
 // Get standalone posts (not in series)
-const standalonePosts = getStandalonePosts(publishedPosts)
+const standalonePosts = getStandalonePosts(postsWithFixedSlugs)
   .sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
 
 // Sort series by order and date
