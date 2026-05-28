@@ -31,8 +31,8 @@ Curl and Divergencetutorial.math.lamar.edu/Classes/CalcIII/CurlDivergence.aspx
 **散度（Divergence）**描述的是向量场在某一点的"发散程度"或"汇聚程度"，是一个标量场（比如在某点水的流量）
 **旋度（Curl）**是描述向量场中某一点的"旋转程度"或者说“旋转倾向”（这里联想一下圆周运动下外边缘某一点的速度是切线方向，也就可以知道旋转程度也由这个切线方向的向量决定），是一个向量场。
 对于三维向量场F=(P,Q,R)F = (P, Q, R)
-散度为： divF=∇⋅F=∂P/∂x+∂Q/∂y+∂R/∂zdiv F = ∇ \cdot F = ∂P/∂x + ∂Q/∂y + ∂R/∂z
-旋度为： curlF=∇×F=(∂R/∂y−∂Q/∂z,∂P/∂z−∂R/∂x,∂Q/∂x−∂P/∂y)curl F = ∇×F = (∂R/∂y - ∂Q/∂z, ∂P/∂z - ∂R/∂x, ∂Q/∂x - ∂P/∂y)
+散度为： `divF=∇⋅F=dP/dx+dQ/dy+dR/dzdiv F = ∇ \cdot F = dP/dx + dQ/dy + dR/dz`
+旋度为： `curlF=∇×F=(dR/dy−dQ/dz,dP/dz−dR/dx,dQ/dx−dP/dy)curl F = ∇×F = (dR/dy - dQ/dz, dP/dz - dR/dx, dQ/dx - dP/dy)`
 一个重要恒等式 div(curlF)=0div(curl F) = 0  ：这说明对于一个向量场的旋度场，它的散度为 0，即它是一个无源场（Divergence-Free）。而一个散度为 0 的向量场，表示这个场是不可压缩的流体，这对日常所见的流体来说是一个很重要的视觉性质，所以据此我们可以使用一个场的旋度场来模拟流体效果。
 不好懂？换个理解方式
 **想象一个漩涡（旋度场）**
@@ -41,12 +41,12 @@ Curl and Divergencetutorial.math.lamar.edu/Classes/CalcIII/CurlDivergence.aspx
 纯粹的旋转不会产生净的流入或流出——流体只是在绕圈转动，并没有在某点累积或消失就像一个旋转的轮子，虽然在转动，但并没有物质从轮子中心涌出或流入，**流量守恒，所以散度为0**。
 难道还要证明一下吗？其实直接计算就能得到结果
 设F=(P,Q,R)F = (P, Q, R)
-curlF=(∂R∂y−∂Q∂z,∂P∂z−∂R∂x,∂Q∂x−∂P∂y)curl F = (\frac{∂R}{∂y} - \frac{∂Q}{∂z}, \frac{∂P}{∂z} - \frac{∂R}{∂x}, \frac{∂Q}{∂x} - \frac{∂P}{∂y})
-div(curlF)=∂∂x(∂R∂y−∂Q∂z)+∂∂y(∂P∂z−∂R∂x)+∂∂z(∂Q∂x−∂P∂y)=∂²R∂x∂y−∂²Q∂x∂z+∂²P∂y∂z−∂²R∂y∂x+∂²Q∂z∂x−∂²P∂z∂ydiv(curl F) = \frac {∂}{∂x(\frac{∂R}{∂y} - \frac{∂Q}{∂z})} + \frac{∂}{∂y(\frac{∂P}{∂z} - \frac{∂R}{∂x})} + \frac{∂}{∂z(\frac{∂Q}{∂x} - \frac{∂P}{∂y})}= \frac{∂²R}{∂x∂y} - \frac{∂²Q}{∂x∂z} + \frac{∂²P}{∂y∂z} - \frac{∂²R}{∂y∂x} + \frac{∂²Q}{∂z∂x} - \frac{∂²P}{∂z∂y}
-∂²R∂x∂y \frac{∂²R}{∂x∂y} 和 −∂²R∂y∂x-\frac{∂²R}{∂y∂x} 抵消
-∂²Q∂z∂x \frac{∂²Q}{∂z∂x} 和 −∂²Q∂x∂z-\frac{∂²Q}{∂x∂z} 抵消
-∂²P∂y∂z \frac{∂²P}{∂y∂z } 和 −∂²P∂z∂y-\frac{∂²P}{∂z∂y } 抵消
-所以 div(curlF)=0div(curl F) = 0
+`curlF=(dR/dy−dQ/dz,dP/dz−dR/dx,dQ/dx−dP/dy)curl F = (\frac{dR}{dy} - \frac{dQ}{dz}, \frac{dP}{dz} - \frac{dR}{dx}, \frac{dQ}{dx} - \frac{dP}{dy})`
+`div(curlF)=d/dx(dR/dy−dQ/dz)+d/dy(dP/dz−dR/dx)+d/dz(dQ/dx−dP/dy)=d²R/dxdy−d²Q/dxdz+d²P/dydz−d²R/dydx+d²Q/dzdx−d²P/dzdydiv(curl F) = \frac {d}{dx(\frac{dR}{dy} - \frac{dQ}{dz})} + \frac{d}{dy(\frac{dP}{dz} - \frac{dR}{dx})} + \frac{d}{dz(\frac{dQ}{dx} - \frac{dP}{dy})}= \frac{d²R}{dxdy} - \frac{d²Q}{dxdz} + \frac{d²P}{dydz} - \frac{d²R}{dydx} + \frac{d²Q}{dzdx} - \frac{d²P}{dzdy}`
+`d²R/dxdy \frac{d²R}{dxdy} 和 −d²R/dydx-\frac{d²R}{dydx} 抵消`
+`d²Q/dzdx \frac{d²Q}{dzdx} 和 −d²Q/dxdz-\frac{d²Q}{dxdz} 抵消`
+`d²P/dydz \frac{d²P}{dydz} 和 −d²P/dzdy-\frac{d²P}{dzdy} 抵消`
+所以 `div(curlF)=0div(curl F) = 0`
 > 当然数学上还存在另一个恒等式 curl(gradf)=0curl(grad f) = 0 ，表示梯度场是无旋的（保守场），这里不作延申
 ## 二、Curl材质算法实现
 
@@ -70,11 +70,11 @@ float n = Texture2DSample(NoiseTexture, NoiseSampler, uv).r;
 float n_down = Texture2DSample(NoiseTexture, NoiseSampler, uv - float2(0, h)).r;  // y-h
 float n_left = Texture2DSample(NoiseTexture, NoiseSampler, uv - float2(h, 0)).r;  // y-h
 // 后向差分法（Backward Difference）
-// ∂N/∂y ≈ (N(x,y) - N(x,y-h)) / h
-// ∂N/∂x ≈ (N(x,y) - N(x-h,y)) / h
+// dN/dy ≈ (N(x,y) - N(x,y-h)) / h
+// dN/dx ≈ (N(x,y) - N(x-h,y)) / h
 float dN_dy = (n - n_down) / h;
 float dN_dx = (n - n_left) / h;
-// 2D Curl公式: (∂N/∂y, -∂N/∂x)
+// 2D Curl公式: (dN/dy, -dN/dx)
 return float2(dN_dy, -dN_dx);
 }
 ```
@@ -90,7 +90,7 @@ float n_right = Texture2DSample(NoiseTexture, NoiseSampler, uv + float2(h, 0)).r
 float n_left  = Texture2DSample(NoiseTexture, NoiseSampler, uv - float2(h, 0)).r;
 float n_up    = Texture2DSample(NoiseTexture, NoiseSampler, uv + float2(0, h)).r;
 float n_down  = Texture2DSample(NoiseTexture, NoiseSampler, uv - float2(0, h)).r;
-// 中心差分: ∂N/∂x ≈ (N(x+h) - N(x-h)) / (2h)
+// 中心差分: dN/dx ≈ (N(x+h) - N(x-h)) / (2h)
 float dN_dx = (n_right - n_left) / (2.0 * h);
 float dN_dy = (n_up - n_down) / (2.0 * h);
 // 2D Curl
@@ -122,7 +122,7 @@ float n_z = Texture2DSample(NoiseTexture, NoiseSampler, uv - float2(h, h) * 0.70
 float dN_dx = (n - n_x) / h;
 float dN_dy = (n - n_y) / h;
 float dN_dz = (n - n_z) / h;
-// 3D Curl公式: curl = (∂N/∂y - ∂N/∂z, ∂N/∂z - ∂N/∂x, ∂N/∂x - ∂N/∂y)
+// 3D Curl公式: curl = (dN/dy - dN/dz, dN/dz - dN/dx, dN/dx - dN/dy)
 float3 curl = float3(
 dN_dy - dN_dz,
 dN_dz - dN_dx,
@@ -153,7 +153,7 @@ float n_z_D = Texture2DSample(NoiseTexture, NoiseSampler, uv - float2(h, h) * 0.
 float dN_dx = (n_x_R - n_x_L) / (2.f * h);
 float dN_dy = (n_y_U - n_y_D) / (2.f * h);
 float dN_dz = (n_z_U - n_z_D) / (2.f * h);
-// 3D Curl公式: curl = (∂N/∂y - ∂N/∂z, ∂N/∂z - ∂N/∂x, ∂N/∂x - ∂N/∂y)
+// 3D Curl公式: curl = (dN/dy - dN/dz, dN/dz - dN/dx, dN/dx - dN/dy)
 float3 curl = float3(
 dN_dy - dN_dz,
 dN_dz - dN_dx,
