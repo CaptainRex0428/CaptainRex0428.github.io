@@ -1,0 +1,315 @@
+---
+title: "重启RestArt ProjectSH｜Noise-CurlNoise"
+description: "从知乎导入的技术文章"
+category: graphics
+tags: [**'UE', '实时渲染', '图形学']
+date: 2026-05-28
+readTime: 287
+heroImage: ""
+published: true
+---
+碰到一个有意思的问题，就是如何在UI中模拟沙、气流或者火焰外扩的流动效果，有经验的同学会说FlowMap，是的是一个很好的解法，也有同学说用Noise来扰乱UV，是的也是一个非常不错的办法，但是最近用这些方法做出来了一些效果结果在一些循环效果中显得有些生硬，所以就在想还有没有什么新的办法可以算出或者记录和FlowMap或者UV Noise类似的信息
+直到我找到一个原本用在流体模拟中的东西Curl Noise以及这篇文章（下方也有一个关于Curl Noise的模拟以及源码），一个新的思路又出现了——我们可以在材质里面把CurlNoise算出来
+**Curl-Noise for Procedural Fluid Flow**
+Curl Noise Previewal-ro.github.io/projects/curl/
+所谓 Curl Noise，即是对一个向量场(可随机可固定)进行 Curl 操作之后得到的新的向量常场。这个场满足散度为 0 的特性，所以这个场看上去就具有流体的视觉特性。
+无论是水蒸气、空气、流沙还是一些其他的东西，在某种程度上都可以被抽象成为一种流体，那有没有一种可能我们将这个信息在UV中算出来，然后拿着这个信息去扰动UV会不会更加接近物理真实呢？
+CurlNoise使用在光束中的表现示例
+所以这篇文章就是关于如何在UV中计算Curl Noise的算法介绍，结合这篇算法介绍，大家可以参考实践篇——Noise-SandNoise
+## 一、引入一些概念
+
+参考文章：
+**GraphicsLab Project 之 Curl Noise**
+### 1.向量场
+
+对于二维向量场可以用 Fx(x,y)⋅i+Fy(x,y)⋅jF_x(x,y)\cdot i+F_y(x, y)\cdot j 来表示，其中 i ji \j 分别为x和y方向单位向量
+对于三维向量场可以用 Fx(x,y)⋅i+Fy(x,y)⋅j+Fz(x,y)⋅kF_x(x,y)\cdot i+F_y(x, y)\cdot j + F_z(x, y)\cdot k 来表示，其中 i j ki \j \ k 分别为x y z方向单位向量
+### 2.散度和旋度
+
+Curl and Divergencetutorial.math.lamar.edu/Classes/CalcIII/CurlDivergence.aspx
+听起来很高级的两个词汇，其实放在物理流体中非常容易理解
+**散度（Divergence）**描述的是向量场在某一点的"发散程度"或"汇聚程度"，是一个标量场（比如在某点水的流量）
+**旋度（Curl）**是描述向量场中某一点的"旋转程度"或者说“旋转倾向”（这里联想一下圆周运动下外边缘某一点的速度是切线方向，也就可以知道旋转程度也由这个切线方向的向量决定），是一个向量场。
+对于三维向量场F=(P,Q,R)F = (P, Q, R)
+散度为： divF=∇⋅F=∂P/∂x+∂Q/∂y+∂R/∂zdiv F = ∇ \cdot F = ∂P/∂x + ∂Q/∂y + ∂R/∂z
+旋度为： curlF=∇×F=(∂R/∂y−∂Q/∂z,∂P/∂z−∂R/∂x,∂Q/∂x−∂P/∂y)curl F = ∇×F = (∂R/∂y - ∂Q/∂z, ∂P/∂z - ∂R/∂x, ∂Q/∂x - ∂P/∂y)
+一个重要恒等式 div(curlF)=0div(curl F) = 0  ：这说明对于一个向量场的旋度场，它的散度为 0，即它是一个无源场（Divergence-Free）。而一个散度为 0 的向量场，表示这个场是不可压缩的流体，这对日常所见的流体来说是一个很重要的视觉性质，所以据此我们可以使用一个场的旋度场来模拟流体效果。
+不好懂？换个理解方式
+**想象一个漩涡（旋度场）**
+**旋度**描述的是"旋转"或"环流"
+**散度**描述的是"净流出"或"净流入"
+纯粹的旋转不会产生净的流入或流出——流体只是在绕圈转动，并没有在某点累积或消失就像一个旋转的轮子，虽然在转动，但并没有物质从轮子中心涌出或流入，**流量守恒，所以散度为0**。
+难道还要证明一下吗？其实直接计算就能得到结果
+设F=(P,Q,R)F = (P, Q, R)
+curlF=(∂R∂y−∂Q∂z,∂P∂z−∂R∂x,∂Q∂x−∂P∂y)curl F = (\frac{∂R}{∂y} - \frac{∂Q}{∂z}, \frac{∂P}{∂z} - \frac{∂R}{∂x}, \frac{∂Q}{∂x} - \frac{∂P}{∂y})
+div(curlF)=∂∂x(∂R∂y−∂Q∂z)+∂∂y(∂P∂z−∂R∂x)+∂∂z(∂Q∂x−∂P∂y)=∂²R∂x∂y−∂²Q∂x∂z+∂²P∂y∂z−∂²R∂y∂x+∂²Q∂z∂x−∂²P∂z∂ydiv(curl F) = \frac {∂}{∂x(\frac{∂R}{∂y} - \frac{∂Q}{∂z})} + \frac{∂}{∂y(\frac{∂P}{∂z} - \frac{∂R}{∂x})} + \frac{∂}{∂z(\frac{∂Q}{∂x} - \frac{∂P}{∂y})}= \frac{∂²R}{∂x∂y} - \frac{∂²Q}{∂x∂z} + \frac{∂²P}{∂y∂z} - \frac{∂²R}{∂y∂x} + \frac{∂²Q}{∂z∂x} - \frac{∂²P}{∂z∂y}
+∂²R∂x∂y \frac{∂²R}{∂x∂y} 和 −∂²R∂y∂x-\frac{∂²R}{∂y∂x} 抵消
+∂²Q∂z∂x \frac{∂²Q}{∂z∂x} 和 −∂²Q∂x∂z-\frac{∂²Q}{∂x∂z} 抵消
+∂²P∂y∂z \frac{∂²P}{∂y∂z } 和 −∂²P∂z∂y-\frac{∂²P}{∂z∂y } 抵消
+所以 div(curlF)=0div(curl F) = 0
+> 当然数学上还存在另一个恒等式 curl(gradf)=0curl(grad f) = 0 ，表示梯度场是无旋的（保守场），这里不作延申
+## 二、Curl材质算法实现
+
+那既然我们知道了原理，如何在渲染中进行模拟？要哪些输入？
+我们可以假设已经有一个由三维NoiseTexture声明的向量场（当然这个输入的图可以是任意的信息含义）
+**我们通过多次偏移采样用梯度变化代替旋度进而就能得到我们想要的旋度场（Curl Field）**
+我们可以单独声明一个ush方便我们在之后的开发中使用
+这里我写在了插件里，为插件配置了ush文件位置的映射
+同时我也声明了一些额外的材质节点方便直接调用（具体方法参考另外声明材质节点的文章）
+目前这里的算法都是基于NoiseTexture的计算，当然你也可以将算法修改为自己先通过计算定义向量场，然后对向量场进行采样的方式，这样就可以绕过采样精度的限制，但是会相应增加复杂度
+### 1.2D CurlNoise
+
+```
+float2 CurlNoise2D(Texture2D NoiseTexture, SamplerState NoiseSampler,
+float2 UVs, float SampleOffset)
+{
+float2 uv = UVs;
+float h = SampleOffset;
+// 采样中心点和2个相邻点（只使用R通道）
+float n = Texture2DSample(NoiseTexture, NoiseSampler, uv).r;
+float n_down = Texture2DSample(NoiseTexture, NoiseSampler, uv - float2(0, h)).r;  // y-h
+float n_left = Texture2DSample(NoiseTexture, NoiseSampler, uv - float2(h, 0)).r;  // y-h
+// 后向差分法（Backward Difference）
+// ∂N/∂y ≈ (N(x,y) - N(x,y-h)) / h
+// ∂N/∂x ≈ (N(x,y) - N(x-h,y)) / h
+float dN_dy = (n - n_down) / h;
+float dN_dx = (n - n_left) / h;
+// 2D Curl公式: (∂N/∂y, -∂N/∂x)
+return float2(dN_dy, -dN_dx);
+}
+```
+同时针对于采样平滑的问题，我们也可以做中心采样
+```
+float2 CurlNoise2D_Central(Texture2D NoiseTexture, SamplerState NoiseSampler,
+float2 UVs, float SampleOffset)
+{
+float2 uv = UVs;
+float h = SampleOffset;
+// 采样4个方向（中心差分需要正负两边）
+float n_right = Texture2DSample(NoiseTexture, NoiseSampler, uv + float2(h, 0)).r;
+float n_left  = Texture2DSample(NoiseTexture, NoiseSampler, uv - float2(h, 0)).r;
+float n_up    = Texture2DSample(NoiseTexture, NoiseSampler, uv + float2(0, h)).r;
+float n_down  = Texture2DSample(NoiseTexture, NoiseSampler, uv - float2(0, h)).r;
+// 中心差分: ∂N/∂x ≈ (N(x+h) - N(x-h)) / (2h)
+float dN_dx = (n_right - n_left) / (2.0 * h);
+float dN_dy = (n_up - n_down) / (2.0 * h);
+// 2D Curl
+return float2(dN_dy, -dN_dx);
+}
+```
+### 2.3D CurlNoise
+
+三维向量场生成的方式由很多，这里提供4种方式
+**1.2D伪模拟3D旋度场**
+这种方式产生的旋度场在Z轴上变化有限（或者说有点重复）
+```
+float3 CurlNoise3D(Texture2D NoiseTexture, SamplerState NoiseSampler,
+float2 UVs, float SampleOffset)
+{
+float2 uv = UVs;
+float h = SampleOffset;
+// 注意：这里我们在2D纹理上模拟3D noise
+// 可以通过不同的UV偏移来模拟z方向
+// 采样中心点
+float n = Texture2DSample(NoiseTexture, NoiseSampler, uv).r;
+// 采样3个方向的点（使用后向差分）
+float n_x = Texture2DSample(NoiseTexture, NoiseSampler, uv - float2(h, 0)).r;     // x-h
+float n_y = Texture2DSample(NoiseTexture, NoiseSampler, uv - float2(0, h)).r;     // y-h
+// 模拟z方向：使用稍微不同的采样模式或者额外的纹理
+// 这里用对角线方向来近似z方向
+float n_z = Texture2DSample(NoiseTexture, NoiseSampler, uv - float2(h, h) * 0.707).r;
+// 计算三个方向的偏导数
+float dN_dx = (n - n_x) / h;
+float dN_dy = (n - n_y) / h;
+float dN_dz = (n - n_z) / h;
+// 3D Curl公式: curl = (∂N/∂y - ∂N/∂z, ∂N/∂z - ∂N/∂x, ∂N/∂x - ∂N/∂y)
+float3 curl = float3(
+dN_dy - dN_dz,
+dN_dz - dN_dx,
+dN_dx - dN_dy
+);
+return curl;
+}
+```
+**中心采样版本**
+```
+float3 CurlNoise3D_Central(Texture2D NoiseTexture, SamplerState NoiseSampler,
+float2 UVs, float SampleOffset)
+{
+float2 uv = UVs;
+float h = SampleOffset;
+// 注意：这里我们在2D纹理上模拟3D noise
+// 可以通过不同的UV偏移来模拟z方向
+// 采样6个方向的点（使用后向差分）
+float n_x_R = Texture2DSample(NoiseTexture, NoiseSampler, uv + float2(h, 0)).r;     // x-h
+float n_x_L = Texture2DSample(NoiseTexture, NoiseSampler, uv - float2(h, 0)).r;     // x-h
+float n_y_U = Texture2DSample(NoiseTexture, NoiseSampler, uv + float2(0, h)).r;     // y-h
+float n_y_D = Texture2DSample(NoiseTexture, NoiseSampler, uv - float2(0, h)).r;     // y-h
+// 模拟z方向：使用稍微不同的采样模式或者额外的纹理
+// 这里用对角线方向来近似z方向
+float n_z_U = Texture2DSample(NoiseTexture, NoiseSampler, uv + float2(h, h) * 0.707).r;
+float n_z_D = Texture2DSample(NoiseTexture, NoiseSampler, uv - float2(h, h) * 0.707).r;
+// 计算三个方向的偏导数
+float dN_dx = (n_x_R - n_x_L) / (2.f * h);
+float dN_dy = (n_y_U - n_y_D) / (2.f * h);
+float dN_dz = (n_z_U - n_z_D) / (2.f * h);
+// 3D Curl公式: curl = (∂N/∂y - ∂N/∂z, ∂N/∂z - ∂N/∂x, ∂N/∂x - ∂N/∂y)
+float3 curl = float3(
+dN_dy - dN_dz,
+dN_dz - dN_dx,
+dN_dx - dN_dy
+);
+return curl;
+}
+```
+**2.使用2D纹理为xyz单独采样**
+这样的方式每个通道的独立性都很强，随机性很好
+```
+float3 CurlNoise3D_MultiChannel(Texture2D NoiseTexture, SamplerState NoiseSampler,
+float2 UVs, float SampleOffset)
+{
+float2 uv = UVs;
+float h = SampleOffset;
+// 分别计算三个通道的curl（每个通道独立计算）
+float3 curl;
+// R通道的2D curl -> XY分量
+float r = Texture2DSample(NoiseTexture, NoiseSampler, uv).r;
+float r_left = Texture2DSample(NoiseTexture, NoiseSampler, uv - float2(h, 0)).r;
+float r_down = Texture2DSample(NoiseTexture, NoiseSampler, uv - float2(0, h)).r;
+float dR_dx = (r - r_left) / h;
+float dR_dy = (r - r_down) / h;
+curl.x = dR_dy;
+curl.y = -dR_dx;
+// G通道的curl -> Z分量
+float g = Texture2DSample(NoiseTexture, NoiseSampler, uv).g;
+float g_left = Texture2DSample(NoiseTexture, NoiseSampler, uv - float2(h, 0)).g;
+float g_down = Texture2DSample(NoiseTexture, NoiseSampler, uv - float2(0, h)).g;
+float dG_dx = (g - g_left) / h;
+float dG_dy = (g - g_down) / h;
+curl.z = dG_dx - dG_dy;
+return curl;
+}
+```
+**中心采样版本**
+```
+float3 CurlNoise3D_MultiChannel_Central(Texture2D NoiseTexture, SamplerState NoiseSampler,
+float2 UVs, float SampleOffset)
+{
+float2 uv = UVs;
+float h = SampleOffset;
+// 分别计算三个通道的curl（每个通道独立计算）
+float3 curl;
+// R通道的2D curl -> XY分量
+float r_right = Texture2DSample(NoiseTexture, NoiseSampler, uv + float2(h, 0)).r;
+float r_left = Texture2DSample(NoiseTexture, NoiseSampler, uv - float2(h, 0)).r;
+float r_top = Texture2DSample(NoiseTexture, NoiseSampler, uv + float2(0, h)).r;
+float r_down = Texture2DSample(NoiseTexture, NoiseSampler, uv - float2(0, h)).r;
+float dR_dx = (r_right - r_left) / (2.f * h);
+float dR_dy = (r_top - r_down) / (2.f * h);
+curl.x = dR_dy;
+curl.y = -dR_dx;
+// G通道的curl -> Z分量
+float g_right = Texture2DSample(NoiseTexture, NoiseSampler, uv + float2(h, 0)).g;
+float g_left = Texture2DSample(NoiseTexture, NoiseSampler, uv - float2(h, 0)).g;
+float g_top = Texture2DSample(NoiseTexture, NoiseSampler, uv + float2(0, h)).g;
+float g_down = Texture2DSample(NoiseTexture, NoiseSampler, uv - float2(0, h)).g;
+float dG_dx = (g_right - g_left) / h;
+float dG_dy = (g_top - g_down) / h;
+curl.z = dG_dx - dG_dy;
+return curl;
+}
+```
+**3.使用Position替代UVs进行多方向映射采样**
+这种方式对于整个场景下的旋度场在连续性上得到了保留
+```
+float3 CurlNoise3D_Combine(Texture2D NoiseTexture, SamplerState NoiseSampler,
+float3 Position,
+float2 ScaleX, float2 OffsetX,
+float2 ScaleY, float2 OffsetY,
+float2 ScaleZ, float2 OffsetZ, float SampleOffset)
+{
+float3 pos = Position;
+float2 CurlX = CurlNoise2D(NoiseTexture, NoiseSampler, pos.gb * ScaleX + OffsetX, SampleOffset);
+float2 CurlY = CurlNoise2D(NoiseTexture, NoiseSampler, pos.rb * ScaleY + OffsetY, SampleOffset);
+float2 CurlZ = CurlNoise2D(NoiseTexture, NoiseSampler, pos.rg * ScaleZ + OffsetZ, SampleOffset);
+float3 curl3D;
+curl3D.x = CurlX.x * 0.7 + CurlZ.y * 0.3;
+curl3D.y = CurlY.x * 0.7 + CurlX.y * 0.3;
+curl3D.z = CurlZ.x * 0.7 + CurlY.y * 0.3;
+return curl3D;
+}
+```
+**中心采样版本**
+```
+float3 CurlNoise3D_Combine_Central(Texture2D NoiseTexture, SamplerState NoiseSampler,
+float3 Position,
+float2 ScaleX, float2 OffsetX,
+float2 ScaleY, float2 OffsetY,
+float2 ScaleZ, float2 OffsetZ, float SampleOffset)
+{
+float3 pos = Position;
+float2 CurlX = CurlNoise2D_Central(NoiseTexture, NoiseSampler, pos.gb * ScaleX + OffsetX, SampleOffset);
+float2 CurlY = CurlNoise2D_Central(NoiseTexture, NoiseSampler, pos.rb * ScaleY + OffsetY, SampleOffset);
+float2 CurlZ = CurlNoise2D_Central(NoiseTexture, NoiseSampler, pos.rg * ScaleZ + OffsetZ, SampleOffset);
+float3 curl3D;
+curl3D.x = CurlX.x * 0.7 + CurlZ.y * 0.3;
+curl3D.y = CurlY.x * 0.7 + CurlX.y * 0.3;
+curl3D.z = CurlZ.x * 0.7 + CurlY.y * 0.3;
+return curl3D;
+}
+```
+**4.使用VolumeTexture采样真实还原三维上的采样结果**
+目前连续性最强，但性能效果相对最高的方法
+```
+float3 CurlNoise3D_Volume(Texture3D NoiseTexture3D, SamplerState NoiseSampler,
+float3 Position, float SampleOffset)
+{
+float3 pos = Position;
+float h = SampleOffset;
+// 采样中心点
+float n = Texture3DSample(NoiseTexture3D, NoiseSampler, pos).r;
+// 采样3个方向（后向差分）
+float n_x = Texture3DSample(NoiseTexture3D, NoiseSampler, pos - float3(h, 0, 0)).r;
+float n_y = Texture3DSample(NoiseTexture3D, NoiseSampler, pos - float3(0, h, 0)).r;
+float n_z = Texture3DSample(NoiseTexture3D, NoiseSampler, pos - float3(0, 0, h)).r;
+// 计算偏导数
+float dN_dx = (n - n_x) / h;
+float dN_dy = (n - n_y) / h;
+float dN_dz = (n - n_z) / h;
+// 3D Curl公式
+float3 curl = float3(
+dN_dy - dN_dz,
+dN_dz - dN_dx,
+dN_dx - dN_dy
+);
+return curl;
+}
+```
+**中心采样版本**
+```
+float3 CurlNoise3D_Volume_Central(Texture3D NoiseTexture3D, SamplerState NoiseSampler,
+float3 Position, float SampleOffset)
+{
+float3 pos = Position;
+float h = SampleOffset;
+// 采样3个方向（后向差分）
+float n_x_R = Texture3DSample(NoiseTexture3D, NoiseSampler, pos + float3(h, 0, 0)).r;
+float n_x_L = Texture3DSample(NoiseTexture3D, NoiseSampler, pos - float3(h, 0, 0)).r;
+float n_y_U = Texture3DSample(NoiseTexture3D, NoiseSampler, pos + float3(0, h, 0)).r;
+float n_y_D = Texture3DSample(NoiseTexture3D, NoiseSampler, pos - float3(0, h, 0)).r;
+float n_z_U = Texture3DSample(NoiseTexture3D, NoiseSampler, pos + float3(0, 0, h)).r;
+float n_z_D = Texture3DSample(NoiseTexture3D, NoiseSampler, pos - float3(0, 0, h)).r;
+// 计算偏导数
+float dN_dx = (n_x_R - n_x_L) / (2.f * h);
+float dN_dy = (n_y_U - n_y_D) / (2.f * h);
+float dN_dz = (n_z_U - n_z_D) / (2.f * h);
+// 3D Curl公式
+float3 curl = float3(
+dN_dy - dN_dz,
+dN_dz - dN_dx,
+dN_dx - dN_dy
+);
+return curl;
+}
+```
+---

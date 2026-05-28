@@ -1,0 +1,318 @@
+---
+title: "重启RestArt ProjectSH｜基于预积分的次表面渲染+Profile优化"
+description: "从知乎导入的技术文章"
+category: graphics
+tags: ['UE', '实时渲染', '图形学']
+date: 2026-05-28
+readTime: 106
+heroImage: ""
+published: true
+---
+[![](https://pica.zhimg.com/v2-8764b9ceceaec982084ce4e18c219545.jpg?source=7e7ef6e2&needBackground=1)图灵重启RestArt ProjectSH｜基于预积分的次表面渲染PreIntegrated SSS0 赞同 · 0 评论 文章](https://zhuanlan.zhihu.com/p/2017660919023420273)
+之前在这篇文章中通过传统的预积分的方式改造了一下Subsurface用来适应皮肤的渲染效果
+
+这一篇作我们一些思路来优化一下它
+
+1.借用UE已有的Subsurface Profile管线的逻辑进行阴影模糊，并通过Profile来控制SSS颜色
+
+2.利用PreIntegrated SSS的方案我们改造一下阴影的形状和基础颜色
+
+3.为了压缩简化Subsurface Profile的存储空间，我们将MeanFreePathDistance和WorldUnitScale加入材质参数进行控制，避免过多Subsurface带来的RT数量过多的存储爆炸问题
+
+## 一、效果展示
+
+再来看一下两个参数对效果的影响，可以通过单例材质实例进行效果强弱和扩散角度的控制，同时由两张贴图分别细化控制区域
+
+## 二、效果实现
+
+### 1.源码端
+
+为PreIntegratedSkin打上使用Profile的标签
+
+需要更改UseSubsurfaceProfile和GetUseSubsurfaceProfileShadingModelMask两个函数
+
+```
+// MaterialShared.h
+
+// ......
+
+inline bool UseSubsurfaceProfile(FMaterialShadingModelField ShadingModel)
+{
+return ShadingModel.HasShadingModel(MSM_SubsurfaceProfile) || ShadingModel.HasShadingModel(MSM_PreintegratedSkin) || ShadingModel.HasShadingModel(MSM_Eye);
+}
+
+// ......
+
+inline uint32 GetUseSubsurfaceProfileShadingModelMask()
+{
+return (1u  0.0h) ? MatCurvature : GBuffer.Curvature;
+
+half UnClampedNoL = dot(GBuffer.WorldNormal, AreaLight.DiffuseL);
+half ShadowFactor = 1.0f - sqrt(Shadow.SurfaceShadow);
+// Rotate the world normal based on the shadow value, it's just a experimental value
+half UnClampedRotatedNoL = max(UnClampedNoL - max(2.0f * UnClampedNoL, 0.4f) * ShadowFactor, -1.0f);
+
+// Shadow 归属：SSSIntensity=0 走 RotatedNoL（Profile），SSSIntensity=1 走 raw NoL + Shadow LUT（Custom）
+half SampleNoL = lerp(UnClampedRotatedNoL, UnClampedNoL, SSSIntensity);
+half4 BurleyDiffuse = GetSSProfilePreIntegratedValue(SubsurfaceProfileId, SampleNoL, Curvature);
+// asset specific color
+half3 Tint = GetSubsurfaceProfileTexture(SSSS_TINT_SCALE_OFFSET, SubsurfaceProfileId).rgb;
+
+// --- Custom LUT 预积分修饰 ---
+float2 curvUV = float2(UnClampedNoL * 0.5 + 0.5, saturate(Curvature * (1.0 / 10.0) + (-0.1 / 10.0)));
+half3 CustomNdotL = Texture2DArraySampleLevel(
+View.ToonRenderBRDF, View.ToonRenderBRDFSampler,
+float3(curvUV, 4), 0).rgb;
+
+// --- Shadow LUT（Custom 方式，SSSIntensity 控制权重）---
+float2 shadowUV = float2(saturate(UnClampedNoL * 0.5 + 0.5), 1.0f);
+half3 ShadowRamp = Texture2DArraySampleLevel(
+View.ToonRenderBRDF, View.ToonRenderBRDFSampler,
+float3(shadowUV, 3), 0).rgb;
+
+// Profile 主干 Diffuse
+half3 ProfileLit = lerp(AreaLight.FalloffColor * (AreaLight.Falloff * AreaLight.NoL) * Shadow.SurfaceShadow, BurleyDiffuse.rgb, Tint);
+
+// Shadow LUT 后乘（仅 Custom 路径生效）
+ProfileLit *= lerp(half3(1, 1, 1), ShadowRamp, SSSIntensity);
+
+// Custom LUT 作为乘性修饰，SSSIntensity 控制混合权重
+Lighting.Diffuse = lerp(ProfileLit, ProfileLit * CustomNdotL, SSSIntensity) * Diffuse_Lambert(GBuffer.DiffuseColor);
+#else
+// --- Desktop 路径：Custom LUT 预积分 ---
+half MatCurvature    = GBuffer.PrecomputedShadowFactors.r; // 0 = 用 ddx/ddy 计算
+half SSSIntensity    = GBuffer.PrecomputedShadowFactors.g; // Custom LUT 混合权重
+// half ShadowEdgeTrans = GBuffer.PrecomputedShadowFactors.b; // 预留
+
+// Curvature
+half Curvature = 0.0h;
+if (MatCurvature > 0.0h)
+{
+Curvature = MatCurvature;
+}
+else
+{
+#if PIXELSHADER
+half3 dNdx = ddx(N);
+half3 dNdy = ddy(N);
+Curvature = saturate(sqrt(max(dot(dNdx, dNdx), dot(dNdy, dNdy))));
+#else
+Curvature = 0.5h;
+#endif
+}
+
+half UnClampedNoL = dot(N, AreaLight.DiffuseL);
+
+#if MATERIAL_ROUGHDIFFUSE
+// Use Chan's diffuse model. It reduces flatness look and has better match, e.g., at the edge of human face skin when compared to GT.
+const float3 DiffuseReflection = Diffuse_GGX_Rough(GBuffer.DiffuseColor, GBuffer.Roughness, Context.NoV, AreaLight.NoL, Context.VoH, Context.NoH, GetAreaLightDiffuseMicroReflWeight(AreaLight));
+#else
+const float3 DiffuseReflection = Diffuse_Burley(GBuffer.DiffuseColor, GBuffer.Roughness, Context.NoV, AreaLight.NoL, Context.VoH);
+#endif
+
+half3 BaseDiffuse = AreaLight.FalloffColor * (AreaLight.Falloff * AreaLight.NoL) * DiffuseReflection;
+
+// Custom NdotL LUT
+// float2 curvUV = float2(UnClampedNoL * 0.5 + 0.5, saturate(Curvature * (1.0 / 10.0) + (-0.1 / 10.0)));
+float2 curvUV = float2(UnClampedNoL * 0.5 + 0.5, saturate(Curvature / 10.0));
+half3 CustomNdotL = ExtractPreIntegratedSkinCurvatureLut(curvUV).rgb;
+
+// Shadow LUT
+float2 shadowUV = float2(saturate(UnClampedNoL * 0.5 + 0.5), 1.0f);
+half3 ShadowRamp = ExtractPreIntegratedSkinShadowLut(shadowUV).rgb;
+
+// SSS Diffuse：Custom LUT 替代标量 NoL
+half3 SSSDiffuse = Diffuse_Lambert(GBuffer.DiffuseColor) * AreaLight.FalloffColor * AreaLight.Falloff * CustomNdotL * ShadowRamp;
+
+// 混合：SSSIntensity=0 纯 Burley/Chan，SSSIntensity=1 纯 Custom LUT
+Lighting.Diffuse = lerp(BaseDiffuse, SSSDiffuse, SSSIntensity);
+
+#endif
+
+if (IsRectLight(AreaLight))
+{
+float3 Lobe0Specular = RectGGXApproxLTC(Lobe0Roughness, GBuffer.SpecularColor, N, V, AreaLight.Rect, AreaLight.Texture);
+float3 Lobe1Specular = RectGGXApproxLTC(Lobe1Roughness, GBuffer.SpecularColor, N, V, AreaLight.Rect, AreaLight.Texture);
+Lighting.Specular = lerp(Lobe0Specular, Lobe1Specular, LobeMix);
+}
+else
+{
+Lighting.Specular = AreaLight.FalloffColor * (AreaLight.Falloff * AreaLight.NoL) * DualSpecularGGX(AverageRoughness, Lobe0Roughness, Lobe1Roughness, LobeMix, GBuffer.SpecularColor, Context, AreaLight);
+}
+
+Lighting.Diffuse  *= ComputeEnergyPreservation(EnergyTerms);
+Lighting.Specular *= ComputeEnergyConservation(EnergyTerms);
+
+#if USE_TRANSMISSION
+
+const uint ProfileId = ExtractSubsurfaceProfileInt(GBuffer);
+FTransmissionProfileParams TransmissionParams = GetTransmissionProfileParams(ProfileId);
+
+float Thickness = Shadow.TransmissionThickness;
+Thickness = DecodeThickness(Thickness);
+Thickness *= SSSS_MAX_TRANSMISSION_PROFILE_DISTANCE;
+float3 Profile = GetTransmissionProfile(ProfileId, Thickness).rgb;
+
+float3 RefracV = refract(V, -N, TransmissionParams.OneOverIOR);
+float PhaseFunction = ApproximateHG( dot(-AreaLight.DiffuseL, RefracV), TransmissionParams.ScatteringDistribution );
+Lighting.Transmission = AreaLight.FalloffColor * Profile * (AreaLight.Falloff * PhaseFunction);
+
+#else // USE_TRANSMISSION
+
+Lighting.Transmission = 0;
+
+#endif // USE_TRANSMISSION
+
+return Lighting;
+}
+```
+
+其中对于Diffuse计算的核心差异就在备注为// Custom NdotL LUT的为位置，通过计算出来的SSSDiffuse和Lighting.Diffuse = lerp(BaseDiffuse, SSSDiffuse, SSSIntensity);做插值来更改原始阴影计算的形状
+
+同时这里通过更改PrecomputedShadowFactors的改造将CustomData0和CustomData1传入了GBuffer中进行计算
+
+```
+// ShadingModels.ush中的使用
+
+half MatCurvature    = GBuffer.PrecomputedShadowFactors.r; // 0 = 用 ddx/ddy 计算
+half SSSIntensity    = GBuffer.PrecomputedShadowFactors.g; // Custom LUT 混合权重
+```
+
+```
+// BasePassPixelShader.usf中重构
+
+#elif MATERIAL_SHADINGMODEL_PREINTEGRATED_SKIN
+half4 ShadowFactors = GetPrecomputedShadowMasks(LightmapVTPageTableResult, Interpolants, MaterialParameters, VolumetricLightmapBrickTextureUVs);
+GBuffer.PrecomputedShadowFactors = float4(GetMaterialCustomData0(PixelMaterialInputs), GetMaterialCustomData1(PixelMaterialInputs), SubsurfaceProfile, ShadowFactors.a);
+```
+
+在ShadingModelMaterial.ush中给定具体的customdata的存储逻辑
+
+```
+#if MATERIAL_SHADINGMODEL_PREINTEGRATED_SKIN
+else if (ShadingModel == SHADINGMODELID_PREINTEGRATED_SKIN)
+{
+#if SUBSURFACE_PROFILE_OPACITY_THRESHOLD
+if (Opacity > SSSS_OPACITY_THRESHOLD_EPS)
+#endif
+{
+GBuffer.CustomData.r = SubsurfaceProfile;
+GBuffer.CustomData.gb = SubsurfaceColor.rg;
+GBuffer.CustomData.a = Opacity;
+
+#if SHADING_PATH_MOBILE
+#if MATERIAL_SUBSURFACE_PROFILE_USE_CURVATURE
+GBuffer.Curvature = GetMaterialCustomData0(PixelMaterialInputs);
+#else
+GBuffer.Curvature = CalculateCurvature(GBuffer.WorldNormal, MaterialParameters.WorldPosition_CamRelative);
+#endif
+GBuffer.Curvature = clamp(GBuffer.Curvature, 0.001f, 1.0f);
+#endif
+}
+#if SUBSURFACE_PROFILE_OPACITY_THRESHOLD
+else
+{
+GBuffer.ShadingModelID = SHADINGMODELID_DEFAULT_LIT;
+GBuffer.CustomData = 0;
+}
+#endif
+}
+```
+
+再在ShadowProjectionPixelShader.usf中为SubsurfaceTransmission和SubsurfaceProfile打上标签
+
+```
+#else // SUBSTRATE_GBUFFER_FORMAT==1
+{
+bHasSubsurface = IsSubsurfaceModel(GBufferData.ShadingModelID);
+bHasSubsurfaceTransmission = GBufferData.ShadingModelID == SHADINGMODELID_SUBSURFACE_PROFILE  || GBufferData.ShadingModelID == SHADINGMODELID_PREINTEGRATED_SKIN;
+bIsEyeOrHair = GBufferData.ShadingModelID == SHADINGMODELID_HAIR || GBufferData.ShadingModelID == SHADINGMODELID_EYE;
+}
+
+// ......
+
+#if SUBSTRATE_GBUFFER_FORMAT==1
+
+// ......
+
+#else // SUBSTRATE_GBUFFER_FORMAT==1
+
+// TODO: Use existing GBuffer data, instead of overwriting?
+FGBufferData GBufferData = GetGBufferData(ScreenUV);
+
+bool IsSubsurfaceProfile = GBufferData.ShadingModelID == SHADINGMODELID_SUBSURFACE_PROFILE  || GBufferData.ShadingModelID == SHADINGMODELID_PREINTEGRATED_SKIN;
+float3 WorldNormal = GBufferData.WorldNormal;
+FTransmissionProfileParams TransmissionParams = GetTransmissionProfileParams(ExtractSubsurfaceProfileInt(GBufferData));
+
+#endif // SUBSTRATE_GBUFFER_FORMAT==1
+```
+
+在DeferredShadingCommon.ush中给PreIntegratedSkin打上标签，然后写上一些ShadowLut和CurvatureLut的通用提取方式
+
+```
+bool UseSubsurfaceProfile(int ShadingModel)
+{
+return ShadingModel == SHADINGMODELID_SUBSURFACE_PROFILE || ShadingModel == SHADINGMODELID_PREINTEGRATED_SKIN || ShadingModel == SHADINGMODELID_EYE;
+}
+```
+
+```
+float4 ExtractPreIntegratedSkinShadowLut(float2 UVs)
+{
+return Texture2DArraySample(View.ToonRenderBRDF, View.ToonRenderBRDFSampler, float3(UVs,3));
+}
+
+float4 ExtractPreIntegratedSkinCurvatureLut(float2 UVs)
+{
+return Texture2DArraySample(View.ToonRenderBRDF, View.ToonRenderBRDFSampler, float3(UVs,4));
+}
+```
+
+最后一步也最重要就是将CustomData0和CustomData1用来累乘我们在Profile中提取出来的参数
+
+位置在PostProcessSubsurfaceCommon.ush中，更改GetBurleyParameters函数，通过传入的Guffer来获取CustomData0和CustomData1的参数
+
+```
+FBurleyParameter GetBurleyParameters(uint SubsurfaceProfileInt, FGBufferData GBuffer)
+{
+
+FBurleyParameter Out = (FBurleyParameter)0;
+Out.SurfaceAlbedo = GetSubsurfaceProfileSurfaceAlbedo(SubsurfaceProfileInt);
+
+Out.DiffuseMeanFreePath = DecodeDiffuseMeanFreePath(GetSubsurfaceProfileDiffuseMeanFreePath(SubsurfaceProfileInt)) * GBuffer.PrecomputedShadowFactors;
+Out.WorldUnitScale = DecodeWorldUnitScale(GetSubsurfaceProfileWorldUnitScale(SubsurfaceProfileInt)) * BURLEY_CM_2_MM;
+
+BRANCH
+if (GBuffer.ShadingModelID == SHADINGMODELID_PREINTEGRATED_SKIN)
+{
+// --- Desktop 路径：Custom LUT 预积分 ---
+half MatCurvature    = GBuffer.PrecomputedShadowFactors.r;
+half SSSIntensity    = GBuffer.PrecomputedShadowFactors.g;
+// half ShadowEdgeTrans = GBuffer.PrecomputedShadowFactors.b; // 预留
+
+Out.DiffuseMeanFreePath *= MatCurvature;
+Out.WorldUnitScale *= SSSIntensity;
+}
+
+// Mask should always be true, we can probably ignore it?
+Out.SurfaceOpacity = UseSubsurfaceProfile(GBuffer.ShadingModelID) ? GBuffer.CustomData.a : 0.0f;
+Out.DiffuseMeanFreePath *= Out.SurfaceOpacity;
+
+return Out;
+}
+```
+
+### 3.材质编辑器
+
+材质编辑器不太需要做什么内容，将相应的贴图和参数加进去就已经满足了基本的使用效果，其他的算法和更改大家可以根据自己的需求进行开发
+
+![图片](https://pic3.zhimg.com/v2-0958657e773e16050fe349c63b94314e_1440w.jpg)
+
+![图片](https://pic2.zhimg.com/v2-f1ae2eab81f1fd550ed27dce16ebee13_1440w.jpg)
+
+---
+
+![图片](https://picx.zhimg.com/v2-c746636e6f4c344b21b27fabc37ff1eb_1440w.jpg)
+
+![图片](https://pica.zhimg.com/v2-9f3400f782c36146c1ef8c8432affa0c_1440w.jpg)
+

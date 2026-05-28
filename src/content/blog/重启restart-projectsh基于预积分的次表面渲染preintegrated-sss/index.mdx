@@ -1,14 +1,14 @@
 ---
-title: "基于预积分的次表面渲染 PreIntegrated SSS"
-description: "在实时渲染中，次表面散射（Subsurface Scattering）是实现皮肤、玉石等半透明材质真实感的关键技术。本文介绍基于预积分的SSS方案，有效避免屏幕空间方法的噪点问题。"
+title: "重启RestArt ProjectSH｜基于预积分的次表面渲染PreIntegrated SSS"
+description: "从知乎导入的技术文章"
 category: graphics
-tags: ['次表面散射', 'SSS', 'UE', '实时渲染', '图形学', '预积分']
-date: 2026-03-31
-readTime: 15
+tags: ['UE', '实时渲染', '图形学']
+date: 2026-05-28
+readTime: 55
 heroImage: ""
 published: true
 ---
-![效果展示](./faceworks-show.jpg)
+![图片](https://pic1.zhimg.com/v2-faccdb3253412c54778cfef3bb32066a_1440w.jpg)
 
 在实时渲染中，次表面散射（Subsurface Scattering）是实现皮肤、玉石等半透明材质真实感的关键技术。目前引擎中主流的实时SSS方案主要分为三类：**基于物理计算的实时散射**、**依赖散射剖面（Subsurface Profile）的预计算方法**、以及**屏幕空间次表面散射（SSSS）**。
 
@@ -18,26 +18,35 @@ published: true
 
 英伟达早期有一个Faceworks的示例工程，其中向我们展示了基于Curvature和Shadow预积分图的方案。
 
-![FaceWorks预积分方案](./faceworks-demo.jpg)
+[https://github.com/NVIDIAGameWorks/FaceWorks.gitgithub.com/NVIDIAGameWorks/FaceWorks.git](https://link.zhihu.com/?target=https%3A//github.com/NVIDIAGameWorks/FaceWorks.git)
+![图片](https://pic2.zhimg.com/v2-1c96a9ebf96ab262a68cf968ee69fbb9_1440w.jpg)
+
+![图片](https://pic3.zhimg.com/v2-6fbe514601e9e36709f80ac38c494d96_1440w.jpg)
+
+![图片](https://pica.zhimg.com/v2-576b29fe4f3122d33454b221bbdc4a9e_1440w.jpg)
+
+![图片](https://pic1.zhimg.com/v2-d0a5930281c67698e6081b3d6be1ca1c_1440w.jpg)
+
+FaceWorks的预积分SSS方案通过 **CurvatureLut** 和 **ShadowLut** 将散射分解为多部分，尤其擅长处理鼻尖等曲率突变区域的明暗过渡。在UE中，我们借鉴其 **直接光SSS**、**ShadowSSS** 和 **DeepScatter** 的实现来改造Subsurface Shading Model管线
 
 ## 一、改造Subsurface管线
 
-首先我们要保留Subsurface的通道传入，并在UE中打开CustomData0和CustomData1：
+首先我们要保留Subsurface的通道传入，并在UE中打开CustomData0和CustomData1
 
-![MaterialAttributeDefinitionMap](./material-attributes.jpg)
+![图片](https://pic4.zhimg.com/v2-6de3600e5cfc720da639b1c9538aa655_1440w.jpg)
 
-![Material.cpp](./material-cpp.jpg)
+![图片](https://pica.zhimg.com/v2-379148beea44b9d53af58bb003d730c0_1440w.jpg)
 
-其次我们要将SSS的颜色传入和颜色显示解绑：
+其次我们要将SSS的颜色传入和颜色显示解绑
 
-### 1. 在DeferredLightingCommon.ush中将DiffuseShadow的计算剔除
+1.在DeferredLightingCommon.ush中将DiffuseShadow的计算剔除，因为我们会使用ShadowLut来计算阴影颜色
 
 ```
 const half DiffuseShadow = (GBuffer.ShadingModelID == SHADINGMODELID_SUBSURFACE) ? 1.0 : Shadow.SurfaceShadow;
-LightAccumulator_AddSplit( LightAccumulator, Lighting.Diffuse, Lighting.Specular, Lighting.Diffuse, MaskedLightColor * DiffuseShadow, bNeedsSeparateSubsurfaceLightAccumulation );
+LightAccumulator_AddSplit( LightAccumulator, Lighting.Diffuse, Lighting.Specular, Lighting.Diffuse, MaskedLightColor * DiffuseShadow, bNeedsSeparateSubsurfaceLightAccumulation );.SurfaceShadow;
 ```
 
-### 2. 在BasePassPixelShader.usf中解绑SSS的颜色计算
+2.在BasePassPixelShader.usf中解绑SSS的颜色计算，但保留其作为通到传递数据的作用
 
 ```
 #if MATERIAL_SHADINGMODEL_SUBSURFACE
@@ -49,19 +58,21 @@ SubsurfaceColor = GetMaterialSubsurfaceDataRaw(PixelMaterialInputs).rgb;
 #endif
 ```
 
-### 3. 屏蔽DiffuseColor对SubsurfaceColor的叠加
+3.同时在BasePassPixelShader.usf中屏蔽DiffuseColor对SubsurfaceColor的叠加（这里可以将SHADINGMODELID_PREINTEGRATED_SKIN单独处理）
 
 ```
 #if MATERIAL_SHADINGMODEL_SUBSURFACE || MATERIAL_SHADINGMODEL_PREINTEGRATED_SKIN
 if (GBuffer.ShadingModelID == SHADINGMODELID_SUBSURFACE || GBuffer.ShadingModelID == SHADINGMODELID_PREINTEGRATED_SKIN)
 {
+// Add subsurface energy to diffuse
+//@todo - better subsurface handling for these shading models with skylight and precomputed GI
 // FaceWorks SSS: SUBSURFACE 的间接光颜色由 SSS 管线自行处理，暂时屏蔽 SubsurfaceColor 叠加
 //DiffuseColorForIndirect += SubsurfaceColor;
 }
 #endif
 ```
 
-### 4. 阻断间接光计算原始的SubsurfaceColor
+4.还要在BasePassPixelShader.usf中阻断间接光计算原始的SubsurfaceColor
 
 ```
 #if MATERIAL_SHADINGMODEL_SUBSURFACE
@@ -73,34 +84,33 @@ SubsurfaceColor = 0;
 #endif
 ```
 
-### 5. 用PrecomputedShadowFactors来记录其传入值
+5.我们在BasePassPixelShader.usf用PrecomputedShadowFactors来记录其传入值
 
 ```
 #elif MATERIAL_SHADINGMODEL_SUBSURFACE
 GBuffer.PrecomputedShadowFactors = float4(GetMaterialCustomData0(PixelMaterialInputs), GetMaterialCustomData1(PixelMaterialInputs), SubsurfaceColor.x,SubsurfaceColor.y);
 ```
 
-### 6. 阻断ShadingModelsMaterial.ush中对SubsurfaceColor传入的值编码处理
+6.同时阻断ShadingModelsMaterial.ush中对SubsurfaceColor传入的值编码处理（这里可以将CustomData先空出来用于后续开发使用）
 
 ```
 #if MATERIAL_SHADINGMODEL_SUBSURFACE
 else if (ShadingModel == SHADINGMODELID_SUBSURFACE)
 {
-// GBuffer.CustomData.rgb = EncodeSubsurfaceColor(subsurfaceColor);
+// GBuffer.CustomData.rgb = EncodeSubsurfaceColor(SubsurfaceColor);
 // GBuffer.CustomData.a = Opacity;
+
 }
 #endif
 ```
 
-## 二、DirectLight SSS实现
-
-在ShadingModels.ush中声明一个新的CustomSubsurfaceBxDF来实现新的逻辑：
+7.在ShadingModels.ush中声明一个新的CustomSubsurfceBxDF来实现新的逻辑
 
 ```
 FDirectLighting CustomSubsurfaceBxDF(FGBufferData GBuffer, half3 N, half3 V, FAreaLight AreaLight, FShadowTerms Shadow )
 ```
 
-同时在一开始处理编辑器的输入，并保留DefaultLitBxDF的基础算法：
+同时在一开始处理编辑器的输入，并保留DefaultLitBxDF的基础算法
 
 ```
 FDirectLighting Lighting = DefaultLitBxDF(GBuffer, N, V, AreaLight, Shadow);
@@ -114,9 +124,7 @@ float3(0.4, 0.7, 3), 0).rgb * SSSIntensity;
 const half  ScatterFalloff = Curvature; // CustomData0：Deep Scatter 衰减系数
 ```
 
-### Curvature LUT采样
-
-![Curvature LUT](./curvature-lut.jpg)
+## 二、直接光SSS实现
 
 ```
 // -----------------------------------------------------------------------
@@ -138,11 +146,11 @@ float3 SSSDiffuse = Diffuse_Lambert(GBuffer.DiffuseColor) * AreaLight.FalloffCol
 Lighting.Diffuse = lerp(Lighting.Diffuse, SSSDiffuse, SSSIntensity);
 ```
 
-这里的计算将NdotL作为UVs的x轴坐标，将Curvature值作为y轴坐标来采样CurvatureLut，CurvatureLut并不是作为颜色参与计算，而是RGB不同通道的衰减强度变化。
+这里CustomRenderBRDF是在引擎中额外声明的贴图数组
+
+这里的计算将NdotL作为UVs的x轴坐标，将Curvature值作为y轴坐标来采样CurvatureLut，CurvatureLut并不是作为颜色参与计算，而是RGB不同通道的衰减强度变化
 
 ## 三、ShadowSSS实现
-
-![Shadow LUT](./shadow-lut.jpg)
 
 ```
 // -----------------------------------------------------------------------
@@ -162,11 +170,9 @@ float3(shadowUV, 3), 0).rgb;
 Lighting.Diffuse *= shadowRGB;
 ```
 
-ShadowSSS的计算相对来说也较简单，直接使用NdotL和传入值（这个值可以是定值也可以是Curvature值）来定义ShadowLut的y轴采样，控制阴影接缝处的衰减率。
+ShadowSSS的计算相对来说也较简单，直接使用NdotL和传入值（这个值可以是定值也可以是Curvarture值）来定义ShadowLut的y轴采样，控制阴影接缝处的衰减率
 
 ## 四、DeepScatter实现
-
-![FaceWorks方案说明](./faceworks-scheme.jpg)
 
 ```
 // -----------------------------------------------------------------------
@@ -178,24 +184,24 @@ const half scatter = exp(-Shadow.TransmissionThickness * ScatterFalloff);
 Lighting.Transmission = scatter * ScatterColor * AreaLight.FalloffColor * AreaLight.Falloff * (saturate(-NdotL_raw) * 0.5 + 0.5);
 ```
 
-DeepScatter比较特殊的是需要使用到Lighting.Transmission并通过exp来计算透射面的衰减率。
+DeepScatter比较特殊的是需要使用到Lighting.Transmition并通过exp来计算透射面的衰减率
 
 ## 五、效果比较
 
-![效果对比1](./comparison-1.jpg)
+![图片](https://picx.zhimg.com/v2-52c6b275c691766bdfbacbcf339b6093_1440w.jpg)
 
-![效果对比2](./comparison-2.jpg)
+![](./image-9.jpg)00:16
 
-这里很明显看到Curvature参数可以控制衰减率，ShadowEdge可以控制明暗交界处的次表面强度。
+这里很明显看到Curvature参数可以控制衰减率，ShadowEdge可以控制明暗交界处的次表面强度
 
-## 技术总结
+---
 
-基于预积分的次表面散射方案相比屏幕空间方法具有以下优势：
+**效果拓展**
 
-1. **无时域噪声**：避免了TAA失配导致的闪烁问题
-2. **性能友好**：仅需简单的纹理查找，无需复杂的卷积计算
-3. **质量稳定**：预计算保证了结果的一致性和可预测性
-4. **易于控制**：通过曲率等参数直观调整散射效果
+[![](./image-10.jpg)重启RestArt ProjectSH｜基于预积分的次表面渲染+Profile优化0 赞同 · 0 评论 文章](https://zhuanlan.zhihu.com/p/2041115663838748743)
+---
 
-该方法特别适合角色渲染和需要高质量次表面效果的场景，是实时渲染中实现真实感半透明材质的有效方案。
+![图片](https://picx.zhimg.com/v2-c746636e6f4c344b21b27fabc37ff1eb_1440w.jpg)
+
+![图片](https://pica.zhimg.com/v2-9f3400f782c36146c1ef8c8432affa0c_1440w.jpg)
 

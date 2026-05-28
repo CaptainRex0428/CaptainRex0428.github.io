@@ -10,7 +10,9 @@
       "Bash(curl:*)",
       "Bash(taskkill /F /IM node.exe)",
       "Bash(taskkill //F //IM node.exe)",
-      "Bash(xargs grep *)"
+      "Bash(xargs grep *)",
+      "WebSearch",
+      "Bash(npm install *)"
     ]
   }
 }
