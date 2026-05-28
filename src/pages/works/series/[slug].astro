@@ -18,6 +18,7 @@ export async function getStaticPaths() {
 const { series } = Astro.props;
 const allWorks = await getCollection('works');
 const seriesWorks = getSeriesWorks(series.data.items, allWorks);
+
 const seriesCover = series.data.coverImage || '/DefaultCover.png';
 
 // 收集合集中所有作品的标签
