@@ -1,20 +1,21 @@
 ---
 import Base from '@/layouts/Base.astro';
-import { getCollection } from 'astro:content';
+import { getCollection, render } from 'astro:content';
 import { useTranslations, getLocaleFromUrl } from '@/i18n';
 import { formatDate } from '@/utils/formatDate';
 import { getHeroImage } from '@/utils/heroImage';
+import { getContentSlug } from '@/utils/contentSlug';
 
 export async function getStaticPaths() {
   const posts = await getCollection('blog');
   return posts.map(post => ({
-    params: { slug: post.slug },
+    params: { slug: getContentSlug(post) },
     props: { post },
   }));
 }
 
 const { post } = Astro.props;
-const { Content } = await post.render();
+const { Content } = await render(post);
 
 const locale = getLocaleFromUrl(Astro.url);
 const t = useTranslations(locale);

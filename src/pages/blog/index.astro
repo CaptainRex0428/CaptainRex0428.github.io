@@ -1,21 +1,15 @@
 ---
 import Base from '@/layouts/Base.astro';
-import Card from '@/components/Card.astro';
-import PostListItem from '@/components/PostListItem.astro';
 import SeriesCard from '@/components/SeriesCard.astro';
 import DynamicTagFilter from '@/components/DynamicTagFilter.astro';
-import ViewToggle from '@/components/ViewToggle.astro';
+import ContentCollection from '@/components/ContentCollection.astro';
 import { getCollection } from 'astro:content';
 import { useTranslations, getLocaleFromUrl } from '@/i18n';
-import { formatDateShort } from '@/utils/formatDate';
 import { getStandalonePosts } from '@/utils/tagHelpers';
-import { getHeroImage } from '@/utils/heroImage';
+import { getContentSlug } from '@/utils/contentSlug';
 
 const locale = getLocaleFromUrl(Astro.url);
 const t = useTranslations(locale);
-
-// Get current view mode
-const currentView = Astro.url.searchParams.get('view') || 'grid';
 
 const allPosts = await getCollection('blog');
 const publishedPosts = allPosts.filter(post => post.data.published);
@@ -49,16 +43,6 @@ const sortedSeries = allSeries.sort((a, b) => {
 // 动态计算合集的标签（使用合集自己的独立标签）
 const seriesTags = [...new Set(sortedSeries.flatMap(series => series.data.tags || []))];
 
-// 动态计算文章的标签
-const postsTags = [...new Set(standalonePosts.flatMap(post => post.data.tags || []))];
-
-const categories = ['frontend', 'graphics', 'tools', 'essay'];
-const categoryNames: Record<string, string> = {
-  frontend: t.categories?.['frontend'] || '前端',
-  graphics: t.categories?.['graphics'] || '图形学',
-  tools: t.categories?.['tools'] || '工具',
-  essay: t.categories?.['essay'] || '随笔',
-};
 ---
 
 <Base title={t.blog.title}>
@@ -88,7 +72,7 @@ const categoryNames: Record<string, string> = {
                    data-content-type="series"
                    data-tags={(series.data.tags || []).join(',')}>
                 <SeriesCard
-                  href={`/blog/series/${series.slug}`}
+                  href={`/blog/series/${getContentSlug(series)}`}
                   title={series.data.title}
                   description={series.data.description}
                   cover={series.data.coverImage}
@@ -101,59 +85,14 @@ const categoryNames: Record<string, string> = {
         </section>
       )}
 
-      <!-- Standalone Posts -->
-      <section class="posts-section">
-        <div class="section-header">
-          <h2 class="section-title">文章</h2>
-          <ViewToggle />
-        </div>
-        <!-- 文章动态标签过滤器 -->
-        {postsTags.length > 0 && (
-          <DynamicTagFilter
-            id="blog-posts-filter"
-            labels={postsTags}
-            targetType="posts"
-            maxVisible={8}
-          />
-        )}
-        {standalonePosts.length > 0 ? (
-          <div class="grid-auto" id="posts-container" data-content-type="posts">
-            {standalonePosts.map(post => {
-              const heroImg = getHeroImage(post);
-              return (
-                <div class={`content-item${heroImg ? ' has-cover' : ''}`}
-                     data-content-type="posts"
-                     data-tags={(post.data.tags || []).join(',')}>
-                  <div class="grid-view-component">
-                    <Card
-                      href={`/blog/${post.slug}`}
-                      title={post.data.title}
-                      description={post.data.description}
-                      cover={heroImg}
-                      tags={post.data.tags}
-                      date={formatDateShort(post.data.date)}
-                    />
-                  </div>
-                  <div class="list-view-component">
-                    <PostListItem
-                      href={`/blog/${post.slug}`}
-                      title={post.data.title}
-                      description={post.data.description}
-                      cover={heroImg}
-                      tags={post.data.tags}
-                      date={formatDateShort(post.data.date)}
-                    />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        ) : (
-          <div class="empty-state">
-            <p>{t.blog.empty}</p>
-          </div>
-        )}
-      </section>
+      <ContentCollection
+        items={standalonePosts}
+        type="posts"
+        title="文章"
+        emptyText={t.blog.empty}
+        basePath="/blog"
+        filterId="blog-posts-filter"
+      />
     </div>
   </section>
 </Base>
@@ -218,12 +157,6 @@ const categoryNames: Record<string, string> = {
     font-weight: 600;
     color: var(--text-primary);
     margin: 0;
-  }
-
-  .posts-list {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-4);
   }
 
   .global-tags {

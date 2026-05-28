@@ -5,11 +5,12 @@ import DynamicTagFilter from '@/components/DynamicTagFilter.astro';
 import { getCollection } from 'astro:content';
 import { getSeriesWorks } from '@/utils/tagHelpers';
 import { getHeroImage } from '@/utils/heroImage';
+import { getContentSlug } from '@/utils/contentSlug';
 
 export async function getStaticPaths() {
   const allSeries = await getCollection('workSeries');
   return allSeries.map(series => ({
-    params: { slug: series.slug },
+    params: { slug: getContentSlug(series) },
     props: { series },
   }));
 }
@@ -59,7 +60,7 @@ const seriesWorksTags = [...new Set(seriesWorks.flatMap(work => work.data.tags |
         {seriesWorks.length > 0 ? (
           <div class="works-list">
             {seriesWorks.map(work => (
-              <a href={`/works/${work.slug}`} class="work-item" data-content-type="series-items" data-tags={(work.data.tags || []).join(',')}>
+              <a href={`/works/${getContentSlug(work)}`} class="work-item" data-content-type="series-items" data-tags={(work.data.tags || []).join(',')}>
                 <h3 class="work-title">{work.data.title}</h3>
                 <div class="work-row">
                   {(() => {

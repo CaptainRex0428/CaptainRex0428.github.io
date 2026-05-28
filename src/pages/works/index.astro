@@ -1,21 +1,15 @@
 ---
 import Base from '@/layouts/Base.astro';
-import Card from '@/components/Card.astro';
-import PostListItem from '@/components/PostListItem.astro';
 import SeriesCard from '@/components/SeriesCard.astro';
 import DynamicTagFilter from '@/components/DynamicTagFilter.astro';
-import ViewToggle from '@/components/ViewToggle.astro';
+import ContentCollection from '@/components/ContentCollection.astro';
 import { getCollection } from 'astro:content';
 import { useTranslations, getLocaleFromUrl } from '@/i18n';
 import { getStandaloneWorks } from '@/utils/tagHelpers';
-import { getHeroImage } from '@/utils/heroImage';
-import { formatDateShort } from '@/utils/formatDate';
+import { getContentSlug } from '@/utils/contentSlug';
 
 const locale = getLocaleFromUrl(Astro.url);
 const t = useTranslations(locale);
-
-// Get current view mode
-const currentView = Astro.url.searchParams.get('view') || 'grid';
 
 const allWorks = await getCollection('works');
 
@@ -50,16 +44,6 @@ const sortedSeries = allSeries.sort((a, b) => {
 // 动态计算合集的标签（使用合集自己的独立标签）
 const seriesTags = [...new Set(sortedSeries.flatMap(series => series.data.tags || []))];
 
-// 动态计算作品的标签
-const worksTags = [...new Set(standaloneWorks.flatMap(work => work.data.tags || []))];
-
-const categories = ['frontend', '3d', 'design-tools', 'other'];
-const categoryNames: Record<string, string> = {
-  frontend: t.categories?.['frontend'] || '前端',
-  '3d': t.categories?.['3d'] || '3D',
-  'design-tools': t.categories?.['design-tools'] || '设计工具',
-  other: t.categories?.['other'] || '其他',
-};
 ---
 
 <Base title={t.works.title}>
@@ -89,7 +73,7 @@ const categoryNames: Record<string, string> = {
                    data-content-type="series"
                    data-tags={(series.data.tags || []).join(',')}>
                 <SeriesCard
-                  href={`/works/series/${series.slug}`}
+                  href={`/works/series/${getContentSlug(series)}`}
                   title={series.data.title}
                   description={series.data.description}
                   cover={series.data.coverImage}
@@ -102,59 +86,14 @@ const categoryNames: Record<string, string> = {
         </section>
       )}
 
-      <!-- Standalone Works -->
-      <section class="works-section">
-        <div class="section-header">
-          <h2 class="section-title">作品</h2>
-          <ViewToggle />
-        </div>
-        <!-- 作品动态标签过滤器 -->
-        {worksTags.length > 0 && (
-          <DynamicTagFilter
-            id="works-items-filter"
-            labels={worksTags}
-            targetType="works"
-            maxVisible={8}
-          />
-        )}
-        {standaloneWorks.length > 0 ? (
-          <div class="grid-auto" id="works-container" data-content-type="works">
-            {standaloneWorks.map(work => {
-              const heroImg = getHeroImage(work);
-              return (
-                <div class={`content-item${heroImg ? ' has-cover' : ''}`}
-                     data-content-type="works"
-                     data-tags={(work.data.tags || []).join(',')}>
-                  <div class="grid-view-component">
-                    <Card
-                      href={`/works/${work.slug}`}
-                      title={work.data.title}
-                      description={work.data.description}
-                      cover={heroImg}
-                      tags={work.data.tags}
-                      date={formatDateShort(work.data.date)}
-                    />
-                  </div>
-                  <div class="list-view-component">
-                    <PostListItem
-                      href={`/works/${work.slug}`}
-                      title={work.data.title}
-                      description={work.data.description}
-                      cover={heroImg}
-                      tags={work.data.tags}
-                      date={formatDateShort(work.data.date)}
-                    />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        ) : (
-          <div class="empty-state">
-            <p>{t.works.empty}</p>
-          </div>
-        )}
-      </section>
+      <ContentCollection
+        items={standaloneWorks}
+        type="works"
+        title="作品"
+        emptyText={t.works.empty}
+        basePath="/works"
+        filterId="works-items-filter"
+      />
     </div>
   </section>
 </Base>

@@ -6,11 +6,12 @@ import { getCollection } from 'astro:content';
 import { getSeriesPosts } from '@/utils/tagHelpers';
 import { formatDateShort } from '@/utils/formatDate';
 import { getHeroImage } from '@/utils/heroImage';
+import { getContentSlug } from '@/utils/contentSlug';
 
 export async function getStaticPaths() {
   const allSeries = await getCollection('blogSeries');
   return allSeries.map(series => ({
-    params: { slug: series.slug },
+    params: { slug: getContentSlug(series) },
     props: { series },
   }));
 }
@@ -60,7 +61,7 @@ const seriesPostsTags = [...new Set(seriesPosts.flatMap(post => post.data.tags |
         {seriesPosts.length > 0 ? (
           <div class="posts-list">
             {seriesPosts.map(post => (
-              <a href={`/blog/${post.slug}`} class="post-item" data-content-type="series-items" data-tags={(post.data.tags || []).join(',')}>
+              <a href={`/blog/${getContentSlug(post)}`} class="post-item" data-content-type="series-items" data-tags={(post.data.tags || []).join(',')}>
                 <h3 class="post-title">{post.data.title}</h3>
                 <div class="post-row">
                   {(() => {
