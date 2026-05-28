@@ -421,7 +421,7 @@ img, video {
 /* ---------- Prose (For Blog Posts) ---------- */
 .prose {
   color: var(--text-secondary);
-  max-width: 70ch;
+  max-width: 105ch;
 }
 
 .prose h2, .prose h3, .prose h4 {
@@ -433,6 +433,7 @@ img, video {
 .prose p {
   margin-bottom: var(--space-4);
   line-height: 1.8;
+  font-size: 1.3rem;
 }
 
 .prose ul, .prose ol {
