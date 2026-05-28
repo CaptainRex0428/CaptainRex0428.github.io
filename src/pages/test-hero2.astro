@@ -1,0 +1,12 @@
+---
+import { getCollection } from 'astro:content';
+---
+<html>
+<body>
+<script type="module">
+  import { getCollection } from 'astro:content';
+  const works = await getCollection('works');
+  console.log('works:', works.map(w => ({id: w.id, slug: w.slug})));
+</script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+---
+import { getCollection } from 'astro:content';
+import { getHeroImage } from '@/utils/heroImage';
+const works = await getCollection('works');
+---
+<html><body>
+<script>console.log({works: works.map(w => ({id: w.id, slug: w.slug, hero: getHeroImage(w)}))})</script>
+<p>Check console</p>
+</body></html>

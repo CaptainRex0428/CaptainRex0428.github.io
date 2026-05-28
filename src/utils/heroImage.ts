@@ -1,4 +1,6 @@
 import type { CollectionEntry } from 'astro:content';
+import { existsSync } from 'fs';
+import { join } from 'path';
 
 /**
  * 获取文章/作品的头图路径
@@ -21,7 +23,13 @@ export function getHeroImage(
     return path;
   }
 
-  // 使用 slug 或从 id 生成 slug
+  // 检查文件夹中是否有 hero.png
   const slug = entry.slug || entry.id.replace(/\.(md|mdx)$/, '').replace(/\/index$/, '');
-  return `/${entry.collection}/${slug}/hero.png`;
+  const heroPath = join('public', entry.collection, slug, 'hero.png');
+  
+  if (existsSync(heroPath)) {
+    return `/${entry.collection}/${slug}/hero.png`;
+  }
+
+  return undefined;
 }

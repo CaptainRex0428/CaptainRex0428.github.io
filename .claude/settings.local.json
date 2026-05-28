@@ -9,7 +9,8 @@
       "Bash(cd:*)",
       "Bash(curl:*)",
       "Bash(taskkill /F /IM node.exe)",
-      "Bash(taskkill //F //IM node.exe)"
+      "Bash(taskkill //F //IM node.exe)",
+      "Bash(xargs grep *)"
     ]
   }
 }
