@@ -1,6 +1,4 @@
 import type { CollectionEntry } from 'astro:content';
-import { existsSync } from 'fs';
-import { join } from 'path';
 
 /**
  * 获取文章/作品的头图路径
@@ -10,29 +8,20 @@ import { join } from 'path';
 export function getHeroImage(
   entry: CollectionEntry<'blog' | 'works'>
 ): string | undefined {
-  // frontmatter 指定了 heroImage 或 cover
-  if (entry.data.heroImage) {
+  // frontmatter 指定了 heroImage（且不为空）
+  if (entry.data.heroImage && entry.data.heroImage.trim() !== '') {
     const path = entry.data.heroImage.startsWith('/') ? entry.data.heroImage : `/${entry.data.heroImage}`;
-    // 检查文件是否存在，不存在则返回默认头图
-    if (existsSync(join('public', path))) {
-      return path;
-    }
+    return path;
   }
+
   // @ts-ignore - 兼容使用 cover 字段的作品
-  if (entry.data.cover) {
+  if (entry.data.cover && entry.data.cover.trim() !== '') {
     // @ts-ignore
     const path = entry.data.cover.startsWith('/') ? entry.data.cover : `/${entry.data.cover}`;
-    // 检查文件是否存在，不存在则返回默认头图
-    if (existsSync(join('public', path))) {
-      return path;
-    }
+    return path;
   }
-  // 检查文件夹中是否有 hero.png（只有在 slug 存在时才检查���
-  if (entry.slug) {
-    const heroPath = join('public', entry.collection, entry.slug, 'hero.png');
-    if (existsSync(heroPath)) {
-      return `/${entry.collection}/${entry.slug}/hero.png`;
-    }
-  }
-  return undefined;
+
+  // 使用 slug 或从 id 生成 slug
+  const slug = entry.slug || entry.id.replace(/\.(md|mdx)$/, '').replace(/\/index$/, '');
+  return `/${entry.collection}/${slug}/hero.png`;
 }

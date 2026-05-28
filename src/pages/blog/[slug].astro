@@ -20,6 +20,17 @@ const { Content } = await render(post);
 const locale = getLocaleFromUrl(Astro.url);
 const t = useTranslations(locale);
 
+// 获取所有系列
+const allSeries = await getCollection('blogSeries');
+
+// 查找当前文章属于哪些系列
+const belongingSeries = allSeries.filter(series =>
+  series.data.items.some(item => {
+    const itemSlug = typeof item === 'string' ? item : item.slug;
+    return itemSlug === post.slug || itemSlug === post.id;
+  })
+);
+
 const categories = {
   frontend: '前端技术',
   graphics: '图形学',
@@ -32,6 +43,16 @@ const heroImage = getHeroImage(post);
 <Base title={post.data.title}>
   <article class="blog-post">
     <header class="post-header">
+      {heroImage && (
+        <div class="post-hero">
+          <img
+            src={heroImage}
+            alt={post.data.title}
+            class="hero-image"
+          />
+        </div>
+      )}
+
       <div class="container">
         <div class="post-meta">
           <span class="post-category">{categories[post.data.category]}</span>
@@ -45,6 +66,16 @@ const heroImage = getHeroImage(post);
         <h1 class="post-title">{post.data.title}</h1>
         <p class="post-description">{post.data.description}</p>
 
+        {belongingSeries.length > 0 && (
+          <div class="post-series">
+            {belongingSeries.map(series => (
+              <a href={`/${locale === 'en' ? 'en/' : ''}blog/series/${getContentSlug(series)}`} class="series-tag">
+                合集: {series.data.title}
+              </a>
+            ))}
+          </div>
+        )}
+
         {post.data.tags.length > 0 && (
           <div class="post-tags">
             {post.data.tags.map(tag => (
@@ -55,20 +86,8 @@ const heroImage = getHeroImage(post);
       </div>
     </header>
 
-    {heroImage && (
-      <div class="post-hero">
-        <div class="container">
-          <img
-            src={heroImage}
-            alt={post.data.title}
-            class="hero-image"
-          />
-        </div>
-      </div>
-    )}
-
     <div class="post-content">
-      <div class="container">
+      <div class="container container-narrow">
         <div class="prose">
           <Content />
         </div>
@@ -77,6 +96,16 @@ const heroImage = getHeroImage(post);
 
     <footer class="post-footer">
       <div class="container">
+        {belongingSeries.length > 0 && (
+          <div class="post-series-footer">
+            <span class="series-label">本文属于合集：</span>
+            {belongingSeries.map(series => (
+              <a href={`/${locale === 'en' ? 'en/' : ''}blog/series/${getContentSlug(series)}`} class="series-link">
+                {series.data.title}
+              </a>
+            ))}
+          </div>
+        )}
         <a href={`/${locale === 'en' ? 'en/' : ''}blog`} class="back-link">
           ← 返回博客列表
         </a>
@@ -88,13 +117,34 @@ const heroImage = getHeroImage(post);
 <style>
   .blog-post {
     min-height: 100vh;
-    padding-top: var(--space-8);
+  }
+
+  .container {
+    max-width: var(--container-max);
+    margin: 0 auto;
+    padding: 0 var(--container-padding);
+  }
+
+  .container-narrow {
+    max-width: 65ch;
+    margin: 0 auto;
+    padding: 0 var(--container-padding);
   }
 
   .post-header {
-    margin-bottom: var(--space-8);
     padding-bottom: var(--space-8);
     border-bottom: 1px solid var(--bg-border);
+  }
+
+  .post-hero {
+    width: 100%;
+    margin-bottom: var(--space-8);
+  }
+
+  .hero-image {
+    width: 100%;
+    height: auto;
+    display: block;
   }
 
   .post-meta {
@@ -123,7 +173,7 @@ const heroImage = getHeroImage(post);
   }
 
   .post-title {
-    font-size: clamp(2rem, 4vw, 3rem);
+    font-size: clamp(2rem, 5vw, 3.5rem);
     font-weight: 700;
     line-height: 1.2;
     margin-bottom: var(--space-4);
@@ -135,6 +185,29 @@ const heroImage = getHeroImage(post);
     color: var(--text-secondary);
     margin-bottom: var(--space-6);
     line-height: 1.6;
+  }
+
+  .post-series {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin-bottom: var(--space-4);
+  }
+
+  .series-tag {
+    padding: var(--space-1) var(--space-3);
+    font-size: var(--text-sm);
+    color: var(--accent);
+    background: var(--accent-glow);
+    border: 1px solid var(--accent);
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    transition: all var(--transition-fast);
+  }
+
+  .series-tag:hover {
+    background: var(--accent);
+    color: var(--bg-base);
   }
 
   .post-tags {
@@ -152,26 +225,8 @@ const heroImage = getHeroImage(post);
     border-radius: var(--radius-sm);
   }
 
-  .post-hero {
-    margin-bottom: var(--space-12);
-  }
-
-  .hero-image {
-    width: 100%;
-    height: auto;
-    max-height: 500px;
-    object-fit: cover;
-    border-radius: var(--radius-lg);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-  }
-
   .post-content {
-    margin-bottom: var(--space-16);
-  }
-
-  .prose {
-    max-width: 65ch;
-    margin: 0 auto;
+    margin-bottom: var(--space-24);
   }
 
   .prose :global(h2) {
@@ -249,7 +304,7 @@ const heroImage = getHeroImage(post);
   }
 
   .post-footer {
-    padding-top: var(--space-8);
+    padding: var(--space-12) 0;
     border-top: 1px solid var(--bg-border);
   }
 
@@ -272,13 +327,46 @@ const heroImage = getHeroImage(post);
     background: var(--accent-glow);
   }
 
+  .post-series-footer {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    margin-bottom: var(--space-6);
+    padding: var(--space-4);
+    background: var(--bg-elevated);
+    border: 1px solid var(--bg-border);
+    border-radius: var(--radius-md);
+  }
+
+  .series-label {
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+  }
+
+  .series-link {
+    font-size: var(--text-sm);
+    color: var(--accent);
+    text-decoration: none;
+    padding: var(--space-1) var(--space-3);
+    background: var(--accent-glow);
+    border: 1px solid var(--accent);
+    border-radius: var(--radius-sm);
+    transition: all var(--transition-fast);
+  }
+
+  .series-link:hover {
+    background: var(--accent);
+    color: var(--bg-base);
+  }
+
   @media (max-width: 768px) {
     .post-title {
       font-size: var(--text-2xl);
     }
 
-    .prose {
-      max-width: 100%;
+    .post-hero {
+      margin-bottom: var(--space-6);
     }
   }
 </style>

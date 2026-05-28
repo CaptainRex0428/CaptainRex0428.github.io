@@ -95,5 +95,9 @@
     "wechat": "WeChat",
     "wechatLabel": "WeChat ID",
     "wechat2Label": "Work WeChat"
+  },
+  "sort": {
+    "byTime": "By Date",
+    "byName": "By Name"
   }
 }

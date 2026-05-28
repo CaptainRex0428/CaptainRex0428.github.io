@@ -7,7 +7,9 @@
       "Bash(gh run *)",
       "Bash(gh auth *)",
       "Bash(cd:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(taskkill /F /IM node.exe)",
+      "Bash(taskkill //F //IM node.exe)"
     ]
   }
 }

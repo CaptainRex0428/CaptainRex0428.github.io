@@ -3,6 +3,7 @@ import Base from '@/layouts/Base.astro';
 import SeriesCard from '@/components/SeriesCard.astro';
 import DynamicTagFilter from '@/components/DynamicTagFilter.astro';
 import ContentCollection from '@/components/ContentCollection.astro';
+import SortDropdown from '@/components/SortDropdown.astro';
 import { getCollection } from 'astro:content';
 import { useTranslations, getLocaleFromUrl } from '@/i18n';
 import { getStandaloneWorks } from '@/utils/tagHelpers';
@@ -57,7 +58,10 @@ const seriesTags = [...new Set(sortedSeries.flatMap(series => series.data.tags |
       <!-- Series Section -->
       {sortedSeries.length > 0 && (
         <section class="series-section">
-          <h2 class="section-title">合集</h2>
+          <div class="section-header">
+            <h2 class="section-title">合集</h2>
+            <SortDropdown id="works-series-sort" targetContainer="works-series-list" />
+          </div>
           <!-- 合集动态标签过滤器 -->
           {seriesTags.length > 0 && (
             <DynamicTagFilter
@@ -67,11 +71,12 @@ const seriesTags = [...new Set(sortedSeries.flatMap(series => series.data.tags |
               maxVisible={8}
             />
           )}
-          <div class="series-list">
+          <div class="series-list" id="works-series-list">
             {sortedSeries.map(series => (
               <div class="content-item"
                    data-content-type="series"
-                   data-tags={(series.data.tags || []).join(',')}>
+                   data-tags={(series.data.tags || []).join(',')}
+                   data-date={series.data.date?.toISOString()}>
                 <SeriesCard
                   href={`/works/series/${getContentSlug(series)}`}
                   title={series.data.title}
@@ -93,6 +98,7 @@ const seriesTags = [...new Set(sortedSeries.flatMap(series => series.data.tags |
         emptyText={t.works.empty}
         basePath="/works"
         filterId="works-items-filter"
+        showSort={true}
       />
     </div>
   </section>
@@ -154,6 +160,16 @@ const seriesTags = [...new Set(sortedSeries.flatMap(series => series.data.tags |
     justify-content: space-between;
     align-items: center;
     margin-bottom: var(--space-6);
+  }
+
+  .series-section .section-header {
+    margin-bottom: var(--space-4);
+  }
+
+  .header-controls {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
   }
 
   .section-title {

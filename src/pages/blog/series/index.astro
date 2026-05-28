@@ -1,6 +1,7 @@
 ---
 import Base from '@/layouts/Base.astro';
 import SeriesCard from '@/components/SeriesCard.astro';
+import SortDropdown from '@/components/SortDropdown.astro';
 import { getCollection } from 'astro:content';
 import { useTranslations, getLocaleFromUrl } from '@/i18n';
 import { aggregateSeriesTags } from '@/utils/tagHelpers';
@@ -26,18 +27,25 @@ const sortedSeries = allSeries.sort((a, b) => {
       </div>
 
       {sortedSeries.length > 0 ? (
-        <div class="series-list">
-          {sortedSeries.map(series => (
-            <SeriesCard
-              href={`/blog/series/${series.slug}`}
-              title={series.data.title}
-              description={series.data.description}
-              cover={series.data.coverImage}
-              tags={aggregateSeriesTags(series.data.items, allPosts)}
-              itemCount={series.data.items.length}
-            />
-          ))}
-        </div>
+        <>
+          <div class="page-controls">
+            <SortDropdown id="series-sort" targetContainer="series-list" />
+          </div>
+          <div class="series-list" id="series-list">
+            {sortedSeries.map(series => (
+              <div class="series-item" data-date={series.data.date?.toISOString()}>
+                <SeriesCard
+                  href={`/blog/series/${series.slug}`}
+                  title={series.data.title}
+                  description={series.data.description}
+                  cover={series.data.coverImage}
+                  tags={aggregateSeriesTags(series.data.items, allPosts)}
+                  itemCount={series.data.items.length}
+                />
+              </div>
+            ))}
+          </div>
+        </>
       ) : (
         <div class="empty-state">
           <p>暂无合集</p>
@@ -63,9 +71,34 @@ const sortedSeries = allSeries.sort((a, b) => {
     color: var(--text-secondary);
   }
 
+  .page-controls {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: var(--space-6);
+  }
+
   .series-list {
     display: flex;
     flex-direction: column;
     gap: var(--space-6);
+  }
+
+  .series-item {
+    transition: opacity var(--transition-base), transform var(--transition-base);
+  }
+
+  .series-item.fade-in {
+    animation: fadeIn var(--transition-base) ease;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 </style>

@@ -1,0 +1,176 @@
+---
+import { useTranslations, getLocaleFromUrl } from '@/i18n';
+
+export interface Props {
+  id: string;
+  defaultSort?: 'time' | 'name';
+  targetContainer: string;
+  itemsContainer?: string;
+}
+
+const { id, defaultSort = 'time', targetContainer, itemsContainer } = Astro.props;
+const locale = getLocaleFromUrl(Astro.url);
+const t = useTranslations(locale);
+
+const options = [
+  { value: 'time', label: t.sort.byTime },
+  { value: 'name', label: t.sort.byName },
+];
+---
+
+<div class="sort-dropdown" id={id}>
+  <label class="sort-label">
+    <svg class="sort-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 6h18M7 12h10M11 18h2"/>
+    </svg>
+    <select class="sort-select" data-target={targetContainer} data-items-container={itemsContainer}>
+      {options.map(option => (
+        <option value={option.value} selected={option.value === defaultSort}>
+          {option.label}
+        </option>
+      ))}
+    </select>
+  </label>
+</div>
+
+<style>
+  .sort-dropdown {
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .sort-label {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    cursor: pointer;
+  }
+
+  .sort-icon {
+    color: var(--text-secondary);
+    flex-shrink: 0;
+  }
+
+  .sort-select {
+    appearance: none;
+    background: var(--bg-elevated);
+    border: 1px solid var(--bg-border);
+    border-radius: var(--radius-md);
+    color: var(--text-secondary);
+    font-size: var(--text-sm);
+    padding: var(--space-2) var(--space-8) var(--space-2) var(--space-3);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238a8a8a' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right var(--space-2) center;
+  }
+
+  .sort-select:hover {
+    border-color: var(--accent);
+    color: var(--text-primary);
+  }
+
+  .sort-select:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px var(--accent-glow);
+  }
+
+  .sort-select option {
+    background: var(--bg-elevated);
+    color: var(--text-primary);
+  }
+
+  /* Dark mode dropdown arrow styling */
+  @media (prefers-color-scheme: dark) {
+    .sort-select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238a8a8a' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    }
+  }
+</style>
+
+<script>
+  // 汉字转拼音（简单实现，取首字母）
+  function getPinyinInitial(str: string): string {
+    const chineseCharMap: Record<string, string> = {
+      '啊': 'a', '八': 'b', '擦': 'c', '大': 'd', '饿': 'e', '发': 'f', '个': 'g',
+      '好': 'h', '鸡': 'j', '开': 'k', '了': 'l', '马': 'm', '你': 'n', '哦': 'o',
+      '跑': 'p', '去': 'q', '然': 'r', '是': 's', '他': 't', '我': 'w', '下': 'x',
+      '呀': 'y', '在': 'z'
+    };
+
+    const firstChar = str.trim()[0] || '';
+    if (/[a-zA-Z]/.test(firstChar)) {
+      return firstChar.toLowerCase();
+    }
+    return chineseCharMap[firstChar] || 'z';
+  }
+
+  // 提取标题用于排序
+  function getTitleForSort(el: Element): string {
+    const titleEl = el.querySelector('.card-title, .series-title, h3, [class*="title"]');
+    return titleEl?.textContent?.trim() || '';
+  }
+
+  // 排序函数
+  function sortItems(
+    container: Element,
+    sortType: 'time' | 'name',
+    getDateAttr: (el: Element) => number
+  ): void {
+    const items = Array.from(container.querySelectorAll('.content-item, .series-item'));
+    if (items.length === 0) return;
+
+    const sortedItems = [...items].sort((a, b) => {
+      if (sortType === 'time') {
+        return getDateAttr(b) - getDateAttr(a); // 降序（最新的在前）
+      }
+      if (sortType === 'name') {
+        const titleA = getTitleForSort(a);
+        const titleB = getTitleForSort(b);
+        return titleA.localeCompare(titleB, 'zh-CN', { sensitivity: 'base' });
+      }
+      return 0;
+    });
+
+    sortedItems.forEach(item => container.appendChild(item));
+  }
+
+  function initSortDropdowns(): void {
+    document.querySelectorAll('.sort-select').forEach(select => {
+      const sortSelect = select as HTMLSelectElement;
+      const targetId = sortSelect.dataset.target;
+
+      if (!targetId) return;
+
+      const targetContainer = document.getElementById(targetId);
+      if (!targetContainer) return;
+
+      const getDateAttr = (el: Element): number => {
+        const dateStr = el.dataset.date;
+        return dateStr ? new Date(dateStr).getTime() : 0;
+      };
+
+      sortSelect.addEventListener('change', () => {
+        const sortType = sortSelect.value as 'time' | 'name';
+        sortItems(targetContainer, sortType, getDateAttr);
+
+        const items = targetContainer.querySelectorAll('.content-item, .series-item');
+        items.forEach((item, index) => {
+          item.classList.remove('fade-in');
+          void item.offsetWidth;
+          setTimeout(() => {
+            item.classList.add('fade-in');
+          }, index * 30);
+        });
+      });
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initSortDropdowns);
+  } else {
+    initSortDropdowns();
+  }
+</script>

@@ -101,5 +101,9 @@
     "wechat": "微信",
     "wechatLabel": "微信号",
     "wechat2Label": "工作微信"
+  },
+  "sort": {
+    "byTime": "按时间排序",
+    "byName": "按名称排序"
   }
 }
