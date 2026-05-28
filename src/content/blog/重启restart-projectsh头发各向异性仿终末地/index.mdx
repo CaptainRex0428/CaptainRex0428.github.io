@@ -62,11 +62,11 @@ published: true
 
 我们可以把Kajiya-Kay用公式表示
 
-dirAtten×(sin⁡θH)specularitydirAtten\times(\sin\theta_H)^{specularity}
+`dirAtten×(sin⁡θH)specularitydirAtten\times(\sin\theta_H)^{specularity}`
 
-sin⁡θH=1−dot(T,H)2\sin\theta_H = \sqrt{1-dot(T,H)^2}
+`sin⁡θH=1−dot(T,H)2\sin\theta_H = \sqrt{1-dot(T,H)^2}`
 
-dirAtten=smoothstep(−1,0,dot(T,H))dirAtten = smoothstep(-1,0,dot(T,H))
+`dirAtten=smoothstep(−1,0,dot(T,H))dirAtten = smoothstep(-1,0,dot(T,H))`
 
 这样就比较清楚地知道了各向异性的一般计算公式
 
@@ -134,7 +134,7 @@ Shift信息可以使用一张图来传入即可，我的方法是做了一个函
 
 那我们在此基础上使用半程向量的思路，用球面法线进一步引导切线的偏向,这样就会在渲染中出现一个沿着球面法线的弧度，更加自然
 
-normalize(SphereNormalWS+TangentWS)normalize(SphereNormalWS + TangentWS)
+`normalize(SphereNormalWS+TangentWS)normalize(SphereNormalWS + TangentWS)`
 
 ![图片](https://picx.zhimg.com/v2-21015f5f792a52ab81ab12f90ce8ccc9_1440w.jpg)
 
