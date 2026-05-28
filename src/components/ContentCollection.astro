@@ -98,11 +98,16 @@ const containerId = type === 'posts' ? 'posts-container' : 'works-container';
   }
 
   .grid-auto {
-    align-items: start !important;
+    align-items: stretch !important;
   }
 
   .grid-auto .grid-view-component {
     display: block;
+    height: 100%;
+  }
+
+  .grid-auto .content-item {
+    height: 100%;
   }
 
   .grid-auto .list-view-component {

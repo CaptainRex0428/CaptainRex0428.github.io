@@ -131,3 +131,21 @@ code: JetBrains Mono / Fira Code, 0.9em
 - 圆角: 12px
 - Loading: skeleton shimmer 或 blur-up
 - Hover: subtle scale(1.02) + brightness(1.05)
+
+## Card Layout Rules
+
+For blog and works grid cards, keep card borders visually aligned within each grid row.
+
+- `ContentCollection.astro` stretches grid items in grid view.
+- The height chain must remain connected: `.content-item` -> `.grid-view-component` -> `.card-link` -> `.card`.
+- `Card.astro` separates cards into two modes:
+  - `.card--with-cover`
+  - `.card--without-cover`
+- Cover cards use a fixed `16 / 9` image aspect ratio.
+- Card titles are clamped to 2 lines.
+- Card descriptions are clamped by mode:
+  - with cover: 5 lines
+  - without cover: 3 lines
+- Tag areas reserve a fixed 3-row slot to avoid card border height changes caused by 1-line, 2-line, or 3-line tag sets.
+- If rendered tags would exceed 3 rows, browser-side measurement hides row 3 and later tags, then shows `...` on the third row.
+- Keep the tag collapse measurement browser-side because exact wrapping depends on container width, loaded fonts, chip padding, borders, and responsive grid width.
