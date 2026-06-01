@@ -9,34 +9,34 @@ const t = useTranslations(locale);
 <Base title={t.about.title}>
   <section class="about section">
     <div class="about-background">
-      <img src="/myphoto.jpg" alt="" class="about-photo" />
+      <img src="/myphoto.jpg" alt="" class="about-photo" loading="lazy" />
     </div>
     <div class="container">
-      <div class="about-header animate-slide-up">
+      <div class="about-header animate-slide-up" data-reveal>
         <h1 class="about-title">{t.about.title}</h1>
         <p class="about-intro">{t.about.intro}</p>
       </div>
 
       <div class="about-grid">
-        <div class="about-card card">
+        <div class="about-card card" data-reveal>
           <h2 class="card-title">{t.about.skills}</h2>
           <div class="skills-grid">
-            <div class="skill-item">
+            <div class="skill-item" data-reveal data-reveal-delay="0">
               <span class="skill-icon">🎮</span>
               <h3>{t.about.skillsList.gamedev}</h3>
               <p class="skill-detail">{t.about.skillsDetail.gamedev}</p>
             </div>
-            <div class="skill-item">
+            <div class="skill-item" data-reveal data-reveal-delay="100">
               <span class="skill-icon">🛠️</span>
               <h3>{t.about.skillsList.dcc}</h3>
               <p class="skill-detail">{t.about.skillsDetail.dcc}</p>
             </div>
-            <div class="skill-item">
+            <div class="skill-item" data-reveal data-reveal-delay="200">
               <span class="skill-icon">🎬</span>
               <h3>{t.about.skillsList.vfx}</h3>
               <p class="skill-detail">{t.about.skillsDetail.vfx}</p>
             </div>
-            <div class="skill-item">
+            <div class="skill-item" data-reveal data-reveal-delay="300">
               <span class="skill-icon">📚</span>
               <h3>{t.about.skillsList.education}</h3>
               <p class="skill-detail">{t.about.skillsDetail.education}</p>
@@ -44,7 +44,7 @@ const t = useTranslations(locale);
           </div>
         </div>
 
-        <div class="about-card card social-card">
+        <div class="about-card card social-card" data-reveal>
           <h2 class="card-title">社交平台</h2>
           <div class="social-buttons">
             <div class="social-row">

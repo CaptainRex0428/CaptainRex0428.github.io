@@ -41,13 +41,15 @@ const categories = {
 
 <Base title={work.data.title}>
   <article class="work-post">
-    <header class="work-header">
+    <header class="work-header" data-reveal>
       {heroImage && (
         <div class="work-hero">
           <img
             src={heroImage}
             alt={work.data.title}
             class="hero-image"
+            width="1200"
+            height="630"
           />
         </div>
       )}

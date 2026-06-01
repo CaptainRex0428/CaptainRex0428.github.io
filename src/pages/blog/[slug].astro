@@ -42,13 +42,15 @@ const heroImage = getHeroImage(post);
 
 <Base title={post.data.title}>
   <article class="blog-post">
-    <header class="post-header">
+    <header class="post-header" data-reveal>
       {heroImage && (
         <div class="post-hero">
           <img
             src={heroImage}
             alt={post.data.title}
             class="hero-image"
+            width="1200"
+            height="630"
           />
         </div>
       )}

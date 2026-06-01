@@ -16,7 +16,7 @@ const { href, title, description, cover, tags = [], date } = Astro.props;
   <div class={`post-row${cover ? '' : ' no-image'}`}>
     {cover && (
       <div class="post-cover">
-        <img src={cover} alt={title} />
+        <img src={cover} alt={title} loading="lazy" width="320" height="180" />
       </div>
     )}
     <div class="post-content">

@@ -19,7 +19,7 @@ const cardModeClass = cover ? 'card--with-cover' : 'card--without-cover';
     <article class={`card ${cardModeClass}`}>
       {cover && (
         <div class="card-cover">
-          <img src={cover} alt={title || ''} loading="lazy" />
+          <img src={cover} alt={title || ''} loading="lazy" width="320" height="180" />
         </div>
       )}
       <div class="card-content">

@@ -3,6 +3,7 @@ import Header from '@/components/Header.astro';
 import Footer from '@/components/Footer.astro';
 import '@/styles/global.css';
 import { getLocaleFromUrl } from '@/i18n';
+import { ViewTransitions } from 'astro:transitions';
 
 interface Props {
   title: string;
@@ -21,6 +22,7 @@ const locale = getLocaleFromUrl(Astro.url);
     <meta name="description" content={description} />
     <title>{title} | CaptainRex</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <ViewTransitions />
   </head>
   <body>
     <div class="page-wrapper">
@@ -30,6 +32,9 @@ const locale = getLocaleFromUrl(Astro.url);
       </main>
       <Footer />
     </div>
+    <script>
+      import '@/scripts/scroll-reveal';
+    </script>
   </body>
 </html>
 

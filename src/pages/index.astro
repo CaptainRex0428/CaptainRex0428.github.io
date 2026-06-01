@@ -40,8 +40,8 @@ const latestWorks = allWorks
           <img src="/rex.png" alt="CaptainRex" class="hero-logo" />
         </div>
         <div class="hero-tags">
-          {(Array.isArray(t.hero.subtitle) ? t.hero.subtitle : [t.hero.subtitle]).map((tag: string) => (
-            <span class="hero-tag">{tag}</span>
+          {(Array.isArray(t.hero.subtitle) ? t.hero.subtitle : [t.hero.subtitle]).map((tag: string, i: number) => (
+            <span class="hero-tag" data-reveal data-reveal-delay={String(300 + i * 100)}>{tag}</span>
           ))}
         </div>
         <div class="hero-actions">
@@ -60,19 +60,21 @@ const latestWorks = allWorks
   <!-- Works Preview -->
   <section class="works-preview section">
     <div class="container">
-      <div class="section-header">
+      <div class="section-header" data-reveal>
         <h2 class="section-title">{t.works.title}</h2>
         <a href="/works" class="link">{t.works.all} &rarr;</a>
       </div>
 
       <div class="grid grid-3">
-        {latestWorks.map(work => (
-          <Card
-            href={`/works/${work.slug}`}
-            badge={work.data.category}
-            title={work.data.title}
-            description={work.data.description}
-          />
+        {latestWorks.map((work, i) => (
+          <div data-reveal data-reveal-delay={String((i + 1) * 100)}>
+            <Card
+              href={`/works/${work.slug}`}
+              badge={work.data.category}
+              title={work.data.title}
+              description={work.data.description}
+            />
+          </div>
         ))}
       </div>
     </div>
@@ -81,20 +83,22 @@ const latestWorks = allWorks
   <!-- Blog Preview -->
   <section class="blog-preview section">
     <div class="container">
-      <div class="section-header">
+      <div class="section-header" data-reveal>
         <h2 class="section-title">{t.blog.title}</h2>
         <a href="/blog" class="link">{t.blog.all} &rarr;</a>
       </div>
 
       <div class="grid grid-2">
-        {latestPosts.map(post => (
-          <Card
-            href={`/blog/${post.slug}`}
-            badge={post.data.category}
-            title={post.data.title}
-            description={post.data.description}
-            date={formatDateShort(post.data.date)}
-          />
+        {latestPosts.map((post, i) => (
+          <div data-reveal data-reveal-delay={String((i + 1) * 100)}>
+            <Card
+              href={`/blog/${post.slug}`}
+              badge={post.data.category}
+              title={post.data.title}
+              description={post.data.description}
+              date={formatDateShort(post.data.date)}
+            />
+          </div>
         ))}
       </div>
     </div>
@@ -115,7 +119,7 @@ const latestWorks = allWorks
   <!-- Contact CTA -->
   <section class="cta-section section">
     <div class="container">
-      <div class="cta-card card">
+      <div class="cta-card card" data-reveal>
         <h2 class="cta-title">想聊聊？</h2>
         <p class="cta-desc">可以在以下平台找到我</p>
         <div class="social-links">
@@ -224,7 +228,7 @@ const latestWorks = allWorks
     border-radius: 50%;
     background: radial-gradient(circle, var(--accent-glow-strong), transparent 70%);
     filter: blur(40px);
-    animation: pulse 4s ease-in-out infinite;
+    animation: pulse 4s ease-in-out infinite, rotate 30s linear infinite;
   }
 
   .grid-lines {
@@ -351,6 +355,16 @@ const latestWorks = allWorks
     background: var(--accent-glow);
     color: var(--text-primary);
     border-color: var(--accent);
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(1.05); }
+  }
+
+  @keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
   }
 
   @media (max-width: 1024px) {
