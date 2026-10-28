@@ -97,15 +97,18 @@ const cardModeClass = cover ? 'card--with-cover' : 'card--without-cover';
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform var(--transition-slow);
+    transition: transform var(--transition-slow), filter var(--transition-slow);
+    filter: brightness(0.95);
   }
 
   .card:hover .card-cover img {
-    transform: scale(1.05);
+    transform: scale(1.08);
+    filter: brightness(1);
   }
 
   .card:hover .card-cover img {
-    transform: scale(1.05);
+    transform: scale(1.08);
+    filter: brightness(1);
   }
 
   .card-content {
@@ -128,11 +131,11 @@ const cardModeClass = cover ? 'card--with-cover' : 'card--without-cover';
     font-weight: 600;
     margin-bottom: var(--space-2);
     color: var(--text-primary);
-    transition: color var(--transition-fast);
+    transition: color var(--transition-base);
   }
 
   .card:hover .card-title {
-    color: var(--accent);
+    color: var(--accent-light);
   }
 
   .card-desc {
@@ -208,13 +211,13 @@ const cardModeClass = cover ? 'card--with-cover' : 'card--without-cover';
     flex-shrink: 0;
     font-size: var(--text-lg);
     line-height: 1;
-    color: var(--text-muted);
-    transition: all var(--transition-fast);
+    color: var(--text-tertiary);
+    transition: all var(--transition-base);
   }
 
   .card:hover .card-arrow {
     color: var(--accent);
-    transform: translateX(4px);
+    transform: translateX(6px);
   }
 </style>
 
