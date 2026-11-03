@@ -261,12 +261,19 @@ const heroImage = getHeroImage(post);
     border: 1px solid var(--bg-border);
     border-radius: var(--radius-sm);
     font-family: 'JetBrains Mono', monospace;
+    /* 长 token（路径、URL、标识符）在窄屏要能断行，否则撑破页面 */
+    overflow-wrap: anywhere;
+  }
+
+  .prose :global(a) {
+    overflow-wrap: anywhere;
   }
 
   .prose :global(pre) {
     padding: var(--space-4);
     margin-bottom: var(--space-6);
     overflow-x: auto;
+    max-width: 100%;
     background: var(--bg-elevated);
     border: 1px solid var(--bg-border);
     border-radius: var(--radius-md);
@@ -303,6 +310,42 @@ const heroImage = getHeroImage(post);
     border-left: 4px solid var(--accent);
     background: var(--accent-glow);
     color: var(--text-secondary);
+  }
+
+  /* 表格：允许横向滚动，避免窄容器把首列挤成一两个字 */
+  .prose :global(table) {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    margin-bottom: var(--space-6);
+    border-collapse: collapse;
+    font-size: var(--text-sm);
+  }
+
+  .prose :global(th),
+  .prose :global(td) {
+    padding: var(--space-2) var(--space-3);
+    border: 1px solid var(--bg-border);
+    text-align: left;
+    vertical-align: top;
+    white-space: nowrap;
+  }
+
+  .prose :global(th) {
+    background: var(--bg-elevated);
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .prose :global(td) {
+    color: var(--text-secondary);
+  }
+
+  /* KaTeX 行间公式在窄屏可横向滚动 */
+  .prose :global(.katex-display) {
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: var(--space-2) 0;
   }
 
   .post-footer {
