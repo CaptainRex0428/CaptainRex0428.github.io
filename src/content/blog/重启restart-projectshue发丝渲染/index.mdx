@@ -8,11 +8,11 @@ readTime: 65
 heroImage: ""
 published: true
 ---
-![图片](https://pic1.zhimg.com/v2-9b5dca949c5e9b061c7aa77b81e0c26a_1440w.jpg)
+![图片](./image-1.jpg)
 
 头发渲染有很多种，这一篇主要针对PBR的发丝渲染展开，在制作上主要使用hlsl代码进行书写和优化（尤其是方便优化），也方便在CustomNode中直接调用
 
-![图片](https://pic3.zhimg.com/v2-d96e30f618c0c276f1b77535611b63ba_1440w.jpg)
+![图片](./image-2.jpg)
 
 ```
 half3 HairPBR(
@@ -61,7 +61,7 @@ return half3(0,0,0);
 
 这套 Shader 的核心是一个名为`HairPBR`的主函数，它读取属性纹理（AttrTex）后，将渲染任务拆分成四条独立的输出管线，分别写入OpacityMask，Tangent，PDO，Basecolor，另外Scatter，Specular，Roughness可以传入定值也可以另外纳入计算，这里简化直接用参数传入，为了优化，必要的信息直接合并到纹理中，通道信息如下。
 
-![图片](https://picx.zhimg.com/v2-7ee283d0c5dd5f5e3e6ce6b48379128f_1440w.jpg)
+![图片](./image-3.jpg)
 
 ## 一、透明度 & 边缘遮罩：OpacityMask
 
@@ -233,12 +233,10 @@ return (subtractTipFromDepth + animatedDither - 0.5) * offset;
 AnimatedDither在这里用时域抖动（TAA 配合的 5 步 pattern + 噪声）平滑深度过渡，同时发根区域深度偏移更大，模拟发根在头皮附近被压住的感觉；发尖偏移小。
 
 ---
-
 ![](./image-4.jpg)00:39
 
 ---
+![图片](./image-5.jpg)
 
-![图片](https://picx.zhimg.com/v2-c746636e6f4c344b21b27fabc37ff1eb_1440w.jpg)
-
-![图片](https://pica.zhimg.com/v2-9f3400f782c36146c1ef8c8432affa0c_1440w.jpg)
+![图片](./image-6.jpg)
 
