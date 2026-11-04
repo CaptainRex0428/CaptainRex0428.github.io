@@ -46,7 +46,9 @@ const latestWorks = allWorks
         </div>
         <div class="hero-actions">
           <a href="/blog" class="btn btn-primary">阅读博客</a>
-          <a href="/works" class="btn btn-secondary">{t.hero.cta}</a>
+          {latestWorks.length > 0 && (
+            <a href="/works" class="btn btn-secondary">{t.hero.cta}</a>
+          )}
         </div>
       </div>
 
@@ -57,7 +59,8 @@ const latestWorks = allWorks
     </div>
   </section>
 
-  <!-- Works Preview -->
+  <!-- Works Preview：没有作品时整段不渲染，避免留下空标题和悬空的「全部 →」 -->
+  {latestWorks.length > 0 && (
   <section class="works-preview section">
     <div class="container">
       <div class="section-header" data-reveal>
@@ -79,6 +82,7 @@ const latestWorks = allWorks
       </div>
     </div>
   </section>
+  )}
 
   <!-- Blog Preview -->
   <section class="blog-preview section">
