@@ -40,7 +40,7 @@ const categories = {
 const heroImage = getHeroImage(post);
 ---
 
-<Base title={post.data.title}>
+<Base title={post.data.title} description={post.data.description}>
   <article class="blog-post">
     <header class="post-header" data-reveal>
       {heroImage && (

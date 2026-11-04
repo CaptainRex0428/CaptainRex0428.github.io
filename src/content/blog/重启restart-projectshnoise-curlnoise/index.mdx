@@ -1,11 +1,11 @@
 ---
 title: "重启RestArt ProjectSH｜Noise-CurlNoise"
-description: "从知乎导入的技术文章"
+description: "沙、气流这类流动效果用 FlowMap 做容易生硬，于是把 Curl Noise 算进材质，用无散度向量场扰动 UV。"
 category: graphics
-tags: ['UE', '实时渲染', '图形学']
+tags: ['Curl Noise', '向量场', 'UV 扰动', '材质']
 date: 2026-05-28
-readTime: 287
-heroImage: ""
+readTime: 27
+heroImage: "./image-6.jpg"
 published: true
 ---
 碰到一个有意思的问题，就是如何在UI中模拟沙、气流或者火焰外扩的流动效果，有经验的同学会说FlowMap，是的是一个很好的解法，也有同学说用Noise来扰乱UV，是的也是一个非常不错的办法，但是最近用这些方法做出来了一些效果结果在一些循环效果中显得有些生硬，所以就在想还有没有什么新的办法可以算出或者记录和FlowMap或者UV Noise类似的信息

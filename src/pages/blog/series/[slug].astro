@@ -26,7 +26,7 @@ const seriesCover = series.data.coverImage || '/DefaultCover.png';
 const seriesPostsTags = [...new Set(seriesPosts.flatMap(post => post.data.tags || []))];
 ---
 
-<Base title={series.data.title}>
+<Base title={series.data.title} description={series.data.description}>
   <section class="series-detail section">
     <div class="container">
       <!-- Series Header -->
