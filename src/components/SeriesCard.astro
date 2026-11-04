@@ -6,9 +6,11 @@ export interface Props {
   cover?: string;
   tags: string[];
   itemCount: number;
+  /** 计数单位：博客用「篇」，作品用「个」 */
+  itemUnit?: string;
 }
 
-const { href, title, description, cover, tags, itemCount } = Astro.props;
+const { href, title, description, cover, tags, itemCount, itemUnit = '篇' } = Astro.props;
 const defaultCover = '/DefaultCover.png';
 const displayCover = cover || defaultCover;
 ---
@@ -27,7 +29,7 @@ const displayCover = cover || defaultCover;
       {tags.length > 5 && <span class="tag tag-more">+{tags.length - 5}</span>}
     </div>
     <div class="series-footer">
-      <span class="series-count">{itemCount} 篇</span>
+      <span class="series-count">{itemCount} {itemUnit}</span>
       <span class="series-arrow">&rarr;</span>
     </div>
   </div>

@@ -24,8 +24,8 @@ const hasMore = labels.length > maxVisible;
   </div>
 
   {hasMore && (
-    <button class="show-all-btn" data-expanded="false">
-      <span class="btn-text">全部</span>
+    <button class="show-all-btn" data-expanded="false" aria-expanded="false" aria-label="展开更多标签">
+      <span class="btn-text">更多标签</span>
       <svg class="dropdown-icon" viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
         <path d="M7 10l5 5 5-5z"/>
       </svg>
@@ -142,14 +142,16 @@ const hasMore = labels.length > maxVisible;
     const showAllBtn = filterContainer.querySelector('.show-all-btn');
     const extraFilters = filterContainer.querySelector('.extra-filters');
 
-    // 处理"全部"按钮展开/收起
+    // 处理"更多标签"按钮展开/收起
     showAllBtn?.addEventListener('click', () => {
       const isExpanded = showAllBtn.getAttribute('data-expanded') === 'true';
       showAllBtn.setAttribute('data-expanded', isExpanded ? 'false' : 'true');
+      showAllBtn.setAttribute('aria-expanded', String(!isExpanded));
+      showAllBtn.setAttribute('aria-label', isExpanded ? '展开更多标签' : '收起更多标签');
 
       const btnText = showAllBtn.querySelector('.btn-text');
       if (btnText) {
-        btnText.textContent = isExpanded ? '全部' : '收起';
+        btnText.textContent = isExpanded ? '更多标签' : '收起';
       }
 
       if (extraFilters) {

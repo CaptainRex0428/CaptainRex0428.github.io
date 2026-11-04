@@ -107,19 +107,14 @@ const seriesWorksTags = [...new Set(seriesWorks.flatMap(work => work.data.tags |
   }
 
   .series-cover {
+    display: block;
     width: 100%;
     max-width: 800px;
-    aspect-ratio: 1380 / 560;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
     margin: 0 auto var(--space-8);
     border-radius: var(--radius-lg);
-    overflow: hidden;
     background: var(--bg-base);
-  }
-
-  .series-cover img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
   }
 
   .series-title {

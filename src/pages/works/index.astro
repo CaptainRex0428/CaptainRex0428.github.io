@@ -84,6 +84,7 @@ const seriesTags = [...new Set(sortedSeries.flatMap(series => series.data.tags |
                   cover={series.data.coverImage}
                   tags={series.data.tags || []}
                   itemCount={series.data.items.length}
+                  itemUnit="个"
                 />
               </div>
             ))}

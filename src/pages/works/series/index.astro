@@ -41,6 +41,7 @@ const sortedSeries = allSeries.sort((a, b) => {
                   cover={series.data.coverImage}
                   tags={aggregateSeriesTags(series.data.items, allWorks)}
                   itemCount={series.data.items.length}
+                  itemUnit="个"
                 />
               </div>
             ))}
