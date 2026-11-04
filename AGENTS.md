@@ -16,7 +16,14 @@
 
 - 这些路径**已被 `.gitignore` 忽略**，不会出现在公开仓库里。
 - 联接只是"发现入口"，**唯一母版永远在控制面**。要改 skill / 政策 / 注册表，回控制面改，不要在这里改 —— 改了会直接改到母版，也会绕过登记门禁。
-- 联接失效（换机、路径变动）时：以控制面注册表为准，重新建链接即可，不要复制一份正文过来。
+- 联接失效（换机、路径变动、重新克隆）时，**不要复制正文**，跑控制面的重建脚本即可：
+
+```powershell
+pwsh -File "E:\BaiduSync\BaiduSyncdisk\RestArtEducation\.codex\tools\link-dev-bridges.ps1" `
+  -Action Link -ProjectPath "<本仓库路径>" -WithControlPlane
+```
+
+  校验用 `-Action Verify`（缺失会返回非零并提示）；移除用 `-Action Remove`（只删联接，不动母版）。
 
 ## 2. 先读什么
 
