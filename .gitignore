@@ -30,3 +30,8 @@ npm-debug.log*
 
 # Astro
 .astro/
+# 代理配置与能力资产：本地保留、不入库（.codex/.agents 为指向控制面的链接）
+.claude/
+.agents/
+.codex/
+

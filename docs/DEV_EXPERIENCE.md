@@ -25,3 +25,17 @@
 - **根因**：这些副本本来就已提交进 `public/`，且复制是覆盖式同字节写入，`git` 比对后无差异。
 - **修法**：无需处理。构建后 `git status --porcelain` 应为空；若非空，说明有人只改了 `src/content` 里的图而没同步提交 `public/`，那才是真问题。
 - **边界**：只有新增或替换内容图片时会改变 `public/`，此时两个位置要一起提交，否则线上图与源图不一致。
+
+## EX-004｜`en.json` 少一个字段，整站构建直接失败
+
+- **现象**：往 `src/i18n/zh.json` 加了新字段（如 `contact`），本地 `npm run build` 报 `Cannot read properties of undefined (reading 'xxx')`，构建中断；若已推送，GitHub Pages 会停在上一版。
+- **根因**：i18n 是 URL 前缀方案，构建时 `/en/` 页面也会渲染 `Footer.astro` 等组件并读 `t.contact.title`。`en.json` 缺该路径 → 取到 `undefined` → 抛错。这属于**构建期**失败，不是运行期兜底。
+- **修法**：改 `zh.json` 必须同一次提交补齐 `en.json` 的对应字段；改完本地 `npm run build` 验证再推。
+- **边界**：纯中文页面（未挂 i18n 的内容页，如文章正文）不受影响；但只要用了 `t.*` 的共享组件（Header/Footer/Base）就会踩到。
+
+## EX-005｜GIF 走图片管线会变静态图
+
+- **现象**：博客里的屏录 GIF 引用成 `./anim.gif` 后，线上变成一张静态图，动画没了。
+- **根因**：Astro 图片管线会把它转成 WebP，只取首帧。
+- **修法**：需要保动画的 GIF 改用 public 直出路径 `/blog/<slug>/anim.gif`（`prebuild` 已把内容目录图片复制过去）。
+- **边界**：普通截图仍用 `./x.png`，能享受转码与尺寸优化；只有"必须动"的文件才走 public。
