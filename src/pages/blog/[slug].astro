@@ -2,9 +2,10 @@
 import Base from '@/layouts/Base.astro';
 import { getCollection, render } from 'astro:content';
 import { useTranslations, getLocaleFromUrl } from '@/i18n';
-import { formatDate } from '@/utils/formatDate';
+import { formatDateShort } from '@/utils/formatDate';
 import { getHeroImage } from '@/utils/heroImage';
 import { getContentSlug } from '@/utils/contentSlug';
+import { author } from '@/config/author';
 
 export async function getStaticPaths() {
   const posts = await getCollection('blog');
@@ -57,9 +58,11 @@ const heroImage = getHeroImage(post);
 
       <div class="container">
         <div class="post-meta">
+          <span class="post-author">{author.name}</span>
+          <span class="meta-divider" aria-hidden="true">·</span>
           <span class="post-category">{categories[post.data.category]}</span>
           <time class="post-date">
-            {formatDate(post.data.date)}
+            {formatDateShort(post.data.date)}
           </time>
           {post.data.readTime && (
             <span class="post-read-time">· {post.data.readTime} 分钟阅读</span>
@@ -98,6 +101,11 @@ const heroImage = getHeroImage(post);
 
     <footer class="post-footer">
       <div class="container">
+        <div class="post-signature">
+          <span class="signature-name">{author.name}</span>
+          <span class="signature-role">{author.role}</span>
+          <span class="signature-tagline">{author.tagline}</span>
+        </div>
         {belongingSeries.length > 0 && (
           <div class="post-series-footer">
             <span class="series-label">本文属于合集：</span>
@@ -152,9 +160,19 @@ const heroImage = getHeroImage(post);
   .post-meta {
     display: flex;
     align-items: center;
-    gap: var(--space-3);
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-3);
     margin-bottom: var(--space-4);
     font-size: var(--text-sm);
+    color: var(--text-muted);
+  }
+
+  .post-author {
+    color: var(--text-primary);
+    font-weight: 600;
+  }
+
+  .meta-divider {
     color: var(--text-muted);
   }
 
@@ -252,6 +270,12 @@ const heroImage = getHeroImage(post);
     line-height: 1.8;
     margin-bottom: var(--space-6);
     color: var(--text-secondary);
+    /* 知乎导入稿里有裸露的长 URL，没有空格可断，窄屏会撑破页面 */
+    overflow-wrap: anywhere;
+  }
+
+  .prose :global(li) {
+    overflow-wrap: anywhere;
   }
 
   .prose :global(code) {
@@ -351,6 +375,32 @@ const heroImage = getHeroImage(post);
   .post-footer {
     padding: var(--space-12) 0;
     border-top: 1px solid var(--bg-border);
+  }
+
+  .post-signature {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    padding-bottom: var(--space-8);
+    margin-bottom: var(--space-8);
+    border-bottom: 1px solid var(--bg-border);
+  }
+
+  .signature-name {
+    font-size: var(--text-lg);
+    font-weight: 600;
+    color: var(--text-primary);
+    letter-spacing: 0.02em;
+  }
+
+  .signature-role {
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+  }
+
+  .signature-tagline {
+    font-size: var(--text-sm);
+    color: var(--text-muted);
   }
 
   .back-link {
