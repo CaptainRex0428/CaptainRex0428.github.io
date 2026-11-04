@@ -6,6 +6,24 @@
 - 定位：负责人个人技术主页（个人第一人称技术身份），可链接机构，但不承担机构主站职能
 - 部署：推 `master` → GitHub Actions → GitHub Pages，**推送即上线**
 
+## 0. 开工前检查（换机、重新克隆、隔了一段时间没碰，必做）
+
+能力的母版在同步盘的中控里，仓库里只有链接。**换了机器或重新克隆，链接是不存在的**，必须先接上再动手，否则你会以为"没有规范"而自己另起一套。
+
+```powershell
+# 1) 先看是否已接上（缺失会返回非零，并列出缺哪几个）
+pwsh -File "E:\BaiduSync\BaiduSyncdisk\RestArtEducation\.codex\tools\link-dev-bridges.ps1" `
+  -Action Verify -ProjectPath "<本仓库路径>" -WithControlPlane
+
+# 2) 返回非零就接上（幂等，可重复执行）
+pwsh -File "E:\BaiduSync\BaiduSyncdisk\RestArtEducation\.codex\tools\link-dev-bridges.ps1" `
+  -Action Link -ProjectPath "<本仓库路径>" -WithControlPlane
+
+# 3) 再接不上，说明同步盘没同步到本机或路径变了 —— 停下来问负责人，不要复制一份正文过来
+```
+
+判断标准：`-Action Verify` 输出「全部联接正常」才可以开始改代码。只看到 warning、或者退出码非零，都算没接上。
+
 ## 1. 能力从哪里来（链接，不是副本）
 
 | 路径 | 类型 | 指向 |
