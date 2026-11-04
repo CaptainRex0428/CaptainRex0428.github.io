@@ -12,8 +12,18 @@ published: true
 直到我找到一个原本用在流体模拟中的东西Curl Noise以及这篇文章（下方也有一个关于Curl Noise的模拟以及源码），一个新的思路又出现了——我们可以在材质里面把CurlNoise算出来
 **Curl-Noise for Procedural Fluid Flow**
 Curl Noise Previewal-ro.github.io/projects/curl/
+
+![](./image-1.jpg)
+![](./image-2.jpg)
+![](./image-3.jpg)
+![](./image-4.jpg)
+
 所谓 Curl Noise，即是对一个向量场(可随机可固定)进行 Curl 操作之后得到的新的向量常场。这个场满足散度为 0 的特性，所以这个场看上去就具有流体的视觉特性。
 无论是水蒸气、空气、流沙还是一些其他的东西，在某种程度上都可以被抽象成为一种流体，那有没有一种可能我们将这个信息在UV中算出来，然后拿着这个信息去扰动UV会不会更加接近物理真实呢？
+
+![](./image-5.jpg)
+![](./image-6.jpg)
+
 CurlNoise使用在光束中的表现示例
 所以这篇文章就是关于如何在UV中计算Curl Noise的算法介绍，结合这篇算法介绍，大家可以参考实践篇——Noise-SandNoise
 ## 一、引入一些概念
@@ -21,6 +31,10 @@ CurlNoise使用在光束中的表现示例
 参考文章：
 **GraphicsLab Project 之 Curl Noise**
 ### 1.向量场
+
+
+![二维向量场](./image-9.jpg)
+![三维向量场](./image-10.jpg)
 
 对于二维向量场可以用 `Fx(x,y)⋅i+Fy(x,y)⋅jF_x(x,y)\cdot i+F_y(x, y)\cdot j` 来表示，其中 i ji \j 分别为x和y方向单位向量
 对于三维向量场可以用 `Fx(x,y)⋅i+Fy(x,y)⋅j+Fz(x,y)⋅kF_x(x,y)\cdot i+F_y(x, y)\cdot j + F_z(x, y)\cdot k` 来表示，其中 i j ki \j \ k 分别为x y z方向单位向量
@@ -56,6 +70,9 @@ Curl and Divergencetutorial.math.lamar.edu/Classes/CalcIII/CurlDivergence.aspx
 我们可以单独声明一个ush方便我们在之后的开发中使用
 这里我写在了插件里，为插件配置了ush文件位置的映射
 同时我也声明了一些额外的材质节点方便直接调用（具体方法参考另外声明材质节点的文章）
+
+![](./image-11.jpg)
+
 目前这里的算法都是基于NoiseTexture的计算，当然你也可以将算法修改为自己先通过计算定义向量场，然后对向量场进行采样的方式，这样就可以绕过采样精度的限制，但是会相应增加复杂度
 ### 1.2D CurlNoise
 
@@ -79,6 +96,9 @@ return float2(dN_dy, -dN_dx);
 }
 ```
 同时针对于采样平滑的问题，我们也可以做中心采样
+
+![](./image-12.jpg)
+
 ```
 float2 CurlNoise2D_Central(Texture2D NoiseTexture, SamplerState NoiseSampler,
 float2 UVs, float SampleOffset)
@@ -132,6 +152,9 @@ return curl;
 }
 ```
 **中心采样版本**
+
+![](./image-13.jpg)
+
 ```
 float3 CurlNoise3D_Central(Texture2D NoiseTexture, SamplerState NoiseSampler,
 float2 UVs, float SampleOffset)
@@ -191,6 +214,9 @@ return curl;
 }
 ```
 **中心采样版本**
+
+![](./image-14.jpg)
+
 ```
 float3 CurlNoise3D_MultiChannel_Central(Texture2D NoiseTexture, SamplerState NoiseSampler,
 float2 UVs, float SampleOffset)
@@ -240,6 +266,9 @@ return curl3D;
 }
 ```
 **中心采样版本**
+
+![](./image-15.jpg)
+
 ```
 float3 CurlNoise3D_Combine_Central(Texture2D NoiseTexture, SamplerState NoiseSampler,
 float3 Position,
@@ -286,6 +315,10 @@ return curl;
 }
 ```
 **中心采样版本**
+
+![](./image-16.jpg)
+![](./image-19.jpg)
+
 ```
 float3 CurlNoise3D_Volume_Central(Texture3D NoiseTexture3D, SamplerState NoiseSampler,
 float3 Position, float SampleOffset)
