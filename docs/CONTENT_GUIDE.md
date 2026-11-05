@@ -85,6 +85,39 @@ frontmatter 的 `2026-05-28` 会被解析成 UTC 零点，直接格式化会显�
 
 推 `master` 即触发 GitHub Actions 构建并部署 Pages，约 1 分钟。推送前跑完整性闸门（见 `AGENTS.md`）。
 
+## 日期口径（导入内容必须遵守）
+
+`date` 只有一个合法来源：**内容的首次发布时间**，不是抓取日、不是最后编辑时间。
+
+### 常见错误
+
+- ❌ **用抓取当天**：知乎导入脚本没取到日期时图省事写当天，结果整批文章挤在同一天（本仓库真踩过：ProjectSH 七篇全被写成 `2026-05-28`）。
+- ❌ **用「编辑于」**：知乎文章页那行 `编辑于 2026-06-04` 是 `dateModified`（最后编辑），作者批量改一次就会被全部刷成同一天。界面上看到的往往就是它。
+
+### 正确取法（知乎）
+
+| 来源 | 字段 | 含义 |
+|---|---|---|
+| 文章页 | `<meta itemprop="datePublished">` | ✅ 首次发布（首选） |
+| 文章页 | `<meta itemprop="dateModified">` | 最后编辑（不要用） |
+| 专栏列表 API | `items[].created` | ✅ 与 `datePublished` 一致 |
+| 专栏列表 API | `items[].updated` | 最后编辑 |
+
+取到的是 UTC ISO 时间，转成本地日期再写进 frontmatter：
+
+```python
+datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d')          # created 是秒级时间戳
+new Date(pub).toLocaleDateString('sv-SE')                          # datePublished 是 ISO 串
+```
+
+### 硬性要求
+
+1. 导入任何平台内容前，先确认该平台的「发布时间」字段在哪，**写成脚本的一部分**，不要事后补。
+2. 取不到真实发布日就**停下来问负责人**，不许拿抓取日或编辑日顶替。
+3. 合集（`blogSeries`）的 `date` 取成员里最早的一篇，保证合集在列表里的位置合理。
+4. 站点只展示发布日；「最后更新」暂不展示，也不必入库。
+5. 批量导入后必须抽查：打开几篇原文页，把 `datePublished` 与 frontmatter 逐一对上。
+
 ## 改完自检
 
 ```bash
