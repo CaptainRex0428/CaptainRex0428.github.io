@@ -5,6 +5,7 @@ category: graphics
 tags: ['RestArtEngine', '引擎开发', '实时渲染', '编辑器', 'AI 协作']
 date: 2026-10-20
 readTime: 8
+heroImage: /blog/series/restarengine-devlog/cover.webp
 published: true
 ---
 Section 01｜2026-10-20

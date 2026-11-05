@@ -5,6 +5,7 @@ category: tools
 tags: ['RestArtEngine', '引擎开发', '编辑器', '工作流', 'AI 协作']
 date: 2026-10-26
 readTime: 9
+heroImage: /blog/series/restarengine-devlog/cover.webp
 published: true
 ---
 Section 02｜2026-10-26
