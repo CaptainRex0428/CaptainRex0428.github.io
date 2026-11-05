@@ -5,7 +5,7 @@ category: tools
 tags: ['C++', 'ProjectA', '编程基础']
 date: 2025-04-23
 readTime: 6
-heroImage: "./image-1.jpg"
+heroImage: "./cover.webp"
 published: true
 ---
 游戏中的武器、车、角色都有其基本的一个形态，人不能像车一样有四个轮子，车也不能像武器一样本来就拥有攻击属性，但是人可以使用车并装备武器来完成任务。

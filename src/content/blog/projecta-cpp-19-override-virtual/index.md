@@ -5,7 +5,7 @@ category: tools
 tags: ['C++', 'ProjectA', '编程基础']
 date: 2025-05-30
 readTime: 7
-heroImage: "./image-1.jpg"
+heroImage: "./cover.webp"
 published: true
 ---
 我们再次回到类中的案例，我们说过类 = 造物主的蓝图，从本质上游戏中的人、车、武器都是一种类型，这种类型决定了他们可以做什么不可以做什么，而这些类型之间又可以相互绑定、相互通信来实现更多的任务。

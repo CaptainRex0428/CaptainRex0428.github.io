@@ -5,7 +5,7 @@ category: tools
 tags: ['C++', 'ProjectA', '编程基础']
 date: 2025-04-26
 readTime: 5
-heroImage: "./image-1.jpg"
+heroImage: "./cover.webp"
 published: true
 ---
 我们已经了解过如何声明一个类，并定义类中的成员变量和成员方法，但是对于类来说我们还有两个核心的过程没有解决，一个就是构建声明，一个就是析构声明

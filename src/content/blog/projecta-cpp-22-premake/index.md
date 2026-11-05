@@ -5,7 +5,7 @@ category: tools
 tags: ['C++', 'ProjectA', '编程基础']
 date: 2025-06-04
 readTime: 4
-heroImage: "./image-1.jpg"
+heroImage: "./cover.webp"
 published: true
 ---
 对于我们日常开发，尤其是对于我们的合作开发环境，大家的本地系统或者说本地的环境配置是不一样的，但是我们又要共同开发源码，有没有一种办法可以让我们只同步源码，然后按照一定的规范来生成工程文件呢？

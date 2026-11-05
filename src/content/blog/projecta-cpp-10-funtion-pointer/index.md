@@ -5,7 +5,7 @@ category: tools
 tags: ['C++', 'ProjectA', '编程基础']
 date: 2025-04-20
 readTime: 5
-heroImage: "./image-1.jpg"
+heroImage: "./cover.webp"
 published: true
 ---
 > 不知道大家有没有发现，编程这个东西越学越"抽象"，我们在编程的过程中，思维逐渐开始以结构化的方式思考日常的问题，然后我们会发现开发中或者生活中的问题都可以用程序的方式进行抽象和提炼再进一步解决。

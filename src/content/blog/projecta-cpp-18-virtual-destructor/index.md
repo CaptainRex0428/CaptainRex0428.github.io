@@ -5,7 +5,7 @@ category: tools
 tags: ['C++', 'ProjectA', '编程基础']
 date: 2025-05-28
 readTime: 2
-heroImage: "./image-1.jpg"
+heroImage: "./cover.webp"
 published: true
 ---
 虚析构函数（Virtual Destructor）似乎是一个很容易被遗漏，但却又非常重要的习惯。

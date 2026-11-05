@@ -5,7 +5,7 @@ category: tools
 tags: ['C++', 'ProjectA', '编程基础']
 date: 2025-11-11
 readTime: 6
-heroImage: "./image-1.jpg"
+heroImage: "./cover.webp"
 published: true
 ---
 ## 一、什么是移动语义(Move Semantics)

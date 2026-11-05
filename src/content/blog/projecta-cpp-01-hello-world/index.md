@@ -5,7 +5,7 @@ category: tools
 tags: ['C++', 'ProjectA', '编程基础']
 date: 2025-04-12
 readTime: 4
-heroImage: "./image-1.jpg"
+heroImage: "./cover.webp"
 published: true
 ---
 终于我们要开始一个全新的项目了

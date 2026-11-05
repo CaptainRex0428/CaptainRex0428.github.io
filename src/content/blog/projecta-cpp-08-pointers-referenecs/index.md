@@ -5,7 +5,7 @@ category: tools
 tags: ['C++', 'ProjectA', '编程基础']
 date: 2025-04-18
 readTime: 9
-heroImage: "./image-1.jpg"
+heroImage: "./cover.webp"
 published: true
 ---
 终于终于写到了这一章，开始有点C++该有的样子了。

@@ -5,7 +5,7 @@ category: tools
 tags: ['C++', 'ProjectA', '编程基础']
 date: 2025-11-05
 readTime: 4
-heroImage: "./image-1.jpg"
+heroImage: "./cover.webp"
 published: true
 ---
 ## 一、什么是位运算

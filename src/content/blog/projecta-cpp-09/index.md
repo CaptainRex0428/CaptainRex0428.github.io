@@ -5,7 +5,7 @@ category: tools
 tags: ['C++', 'ProjectA', '编程基础']
 date: 2025-04-18
 readTime: 8
-heroImage: "./image-1.jpg"
+heroImage: "./cover.webp"
 published: true
 ---
 游戏中角色是不是得有自己的名字？技能是不是在介绍中也得有名字？甚至在FPS游戏中敌人标、队友标是不是都得有名字？在程序的本质上，这些名字就是字符串。

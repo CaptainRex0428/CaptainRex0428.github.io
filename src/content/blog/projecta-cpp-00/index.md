@@ -5,7 +5,7 @@ category: tools
 tags: ['C++', 'ProjectA', '编程基础']
 date: 2025-04-12
 readTime: 3
-heroImage: "./image-1.jpg"
+heroImage: "./cover.webp"
 published: true
 ---
 ## 为什么要开始这个系列

@@ -5,7 +5,7 @@ category: tools
 tags: ['C++', 'ProjectA', '编程基础']
 date: 2025-04-22
 readTime: 6
-heroImage: "./image-1.jpg"
+heroImage: "./cover.webp"
 published: true
 ---
 现在我们在开发游戏中又碰到了一个新的任务，我们要对游戏道具仓库进行编号和排序

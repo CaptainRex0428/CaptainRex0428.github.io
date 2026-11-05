@@ -5,7 +5,7 @@ category: tools
 tags: ['C++', 'ProjectA', '编程基础']
 date: 2025-04-21
 readTime: 6
-heroImage: "./image-1.jpg"
+heroImage: "./cover.webp"
 published: true
 ---
 又是一章新的名词，lambda？可以用来做什么？是用来解决什么问题的？

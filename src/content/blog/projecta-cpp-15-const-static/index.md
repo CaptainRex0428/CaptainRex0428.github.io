@@ -5,7 +5,7 @@ category: tools
 tags: ['C++', 'ProjectA', '编程基础']
 date: 2025-04-23
 readTime: 7
-heroImage: "./image-1.jpg"
+heroImage: "./cover.webp"
 published: true
 ---
 const static mutable是我们常用的三大修饰关键字，决定了具体变量的访问权限，以及类成员函数的行为权限。

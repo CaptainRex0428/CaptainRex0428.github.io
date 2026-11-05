@@ -5,7 +5,7 @@ category: tools
 tags: ['C++', 'ProjectA', '编程基础']
 date: 2025-06-03
 readTime: 3
-heroImage: "./image-1.jpg"
+heroImage: "./cover.webp"
 published: true
 ---
 指针必然是C++中最容易让初学者掉进陷阱的东西

@@ -5,7 +5,7 @@ category: tools
 tags: ['C++', 'ProjectA', '编程基础']
 date: 2025-05-08
 readTime: 5
-heroImage: "./image-1.jpg"
+heroImage: "./cover.webp"
 published: true
 ---
 想象你要设计一个《魔兽世界》的角色系统，那所有的角色都有一些共同的特征，我们将这些特征归类为“基础类别”，比如名字、血量、移动方法，但除了这些基础类别，不同的职业也有着不同的技能和特性，比如战士的怒气值、法师的法力值，我们将这些特征归类为“派生类别”
