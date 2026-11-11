@@ -1,14 +1,14 @@
 ---
-title: "RestArtEngine：面向技术美术的 C++20 / DX11 场景引擎与编辑器"
-description: "一个可执行文件同时充当 Project Manager 与场景编辑器，光栅走 Forward / Deferred 双路径，光线走解析光追、DXR 1.1 与路径追踪三条通道。这里说明它现在能做什么、怎么验证、边界在哪。"
+title: "RestArtEngine：AI全流程开发的多平台游戏引擎"
+description: "C++20 加 DirectX 11 写成的场景引擎与编辑器，从架构、Shader 到自测脚本都由 AI 协作流程产出；目标是一套代码跨平台，目前 Windows 可运行。这里说明它现在能做什么、怎么验证、边界在哪。"
 category: design-tools
-tags: ['C++20', 'DirectX 11', 'DXR', '游戏引擎', '编辑器', '实时渲染']
-heroImage: "./sandbox.webp"
+tags: ['C++20', 'DirectX 11', 'DXR', '游戏引擎', 'AI 开发', '实时渲染']
+heroImage: "./banner.webp"
 date: 2026-11-05
 order: 1
 ---
 
-RestArtEngine 是我自己写的 Windows 场景引擎与编辑器：C++20 加 DirectX 11，编译出来只有一个 `RestArtEngine.exe`，却承担两份工作——不带参数启动时是 Project Manager，用 `--project` 启动时直接进场景编辑器。
+RestArtEngine 是我用 AI 协作流程写出来的 Windows 场景引擎与编辑器：C++20 加 DirectX 11，编译出来只有一个 `RestArtEngine.exe`，却承担两份工作——不带参数启动时是 Project Manager，用 `--project` 启动时直接进场景编辑器。跨平台（Linux / macOS、统一 RHI、编辑器适配）还在设计阶段，现在能跑的是 Windows。
 
 写它不是为了再做一个通用引擎，而是想把技术美术日常要碰的东西放到同一套数据里：材质参数、Shader 草稿、光照、阴影方法、光追通道、诊断数据。其中一帧的 Pass 顺序和资源依赖由 `RenderPipeline` 统一声明，执行、诊断、测试读的是同一份声明。
 
@@ -111,6 +111,18 @@ ctest --test-dir build/cmake-vs2022 -C Debug --output-on-failure
 ```
 
 截图和文档与功能同一次提交更新。宁可写得少，也不要留下与代码不符的描述。
+
+## 怎么开发：AI 全流程协作
+
+这个引擎的开发方式本身也是项目的一部分。仓库根目录放一份 `AGENTS.md` 作为 AI 的入口约定；具体技能放在 `.agents/skills/`，角色定义在 `.codex/agents/`；而任务规则、进度记录、开发日志和协作说明住在独立的 `local/` 仓库里，不跟着引擎进公开仓库——所以公开仓库里只有引擎代码、文档和测试。
+
+流程不是「让 AI 随便写」，而是先立规矩再动手：
+
+- **文档先行**：加渲染阶段时，先把 Pass 顺序和资源依赖写进 `RenderPipeline` 声明，再补特性状态，最后才写执行代码。声明错了校验器在帧开始时直接报错；
+- **自测代替口头保证**：编辑器全流程用真实鼠标键盘注入跑，光追、GI、灯光、相机各有专项 GPU 自测，结果导出 BMP 与 JSON；
+- **边界写在文档里**：功能做到哪、缺什么，写进对应文档的「边界」一节，而不是留在聊天记录或记忆里。
+
+这套流程解决的是「模型换了几轮、人还会不会接着做」的问题：规矩和执行代码放在一起，下一个人（或下一个模型）读文档就能接手。
 
 ## 当前边界
 
