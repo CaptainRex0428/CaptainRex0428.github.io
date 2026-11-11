@@ -1,5 +1,5 @@
 ---
-import { getLocaleFromUrl, useTranslations, getLocalizedPath, getAlternateLocale } from '@/i18n';
+import { getLocaleFromUrl, useTranslations, getLocalizedPath, getAlternateLocale, getAlternateHref } from '@/i18n';
 
 const locale = getLocaleFromUrl(Astro.url);
 const t = useTranslations(locale);
@@ -48,7 +48,7 @@ const navItems = [
 
       <div class="nav-actions">
         <a
-          href={getLocalizedPath(Astro.url.pathname, alternateLocale)}
+          href={getAlternateHref(Astro.url.pathname, alternateLocale)}
           class="lang-switch"
           aria-label={alternateLocale === 'en' ? 'Switch to English' : '切换到中文'}
         >
@@ -79,7 +79,7 @@ const navItems = [
 
     <div class="sidebar-footer">
       <a
-        href={getLocalizedPath(Astro.url.pathname, alternateLocale)}
+        href={getAlternateHref(Astro.url.pathname, alternateLocale)}
         class="sidebar-lang-switch"
       >
         {alternateLocale === 'en' ? 'English' : '中文'}

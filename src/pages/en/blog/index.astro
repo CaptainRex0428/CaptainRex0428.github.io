@@ -1,0 +1,134 @@
+---
+import Base from '@/layouts/Base.astro';
+import SeriesCard from '@/components/SeriesCard.astro';
+import DynamicTagFilter from '@/components/DynamicTagFilter.astro';
+import ContentCollection from '@/components/ContentCollection.astro';
+import SortDropdown from '@/components/SortDropdown.astro';
+import { getCollection } from 'astro:content';
+import { useTranslations, getLocaleFromUrl } from '@/i18n';
+import { getStandalonePosts } from '@/utils/tagHelpers';
+import { getContentSlug } from '@/utils/contentSlug';
+
+const locale = getLocaleFromUrl(Astro.url);
+const t = useTranslations(locale);
+
+const allPosts = await getCollection('blog');
+const publishedPosts = allPosts
+  .filter(post => post.data.published)
+  .map(post => ({
+    ...post,
+    slug: post.slug || post.id.replace(/\.(md|mdx)$/, '').replace(/\/index$/, ''),
+  }));
+
+const allSeries = await getCollection('blogSeries');
+const standalonePosts = getStandalonePosts(publishedPosts)
+  .sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+
+const sortedSeries = allSeries.sort((a, b) => {
+  if (a.data.order !== b.data.order) return b.data.order - a.data.order;
+  return (b.data.date?.getTime() || 0) - (a.data.date?.getTime() || 0);
+});
+
+const seriesTags = [...new Set(sortedSeries.flatMap(series => series.data.tags || []))];
+---
+
+<Base title={t.blog.title}>
+  <section class="blog-page section">
+    <div class="container">
+      <div class="page-header">
+        <h1 class="page-title">{t.blog.title}</h1>
+        <p class="page-subtitle">{t.blog.subtitle}</p>
+      </div>
+
+      {sortedSeries.length > 0 && (
+        <section class="series-section">
+          <div class="section-header">
+            <h2 class="section-title">{t.blog.seriesTitle}</h2>
+            <SortDropdown id="en-blog-series-sort" targetContainer="en-blog-series-list" />
+          </div>
+          {seriesTags.length > 0 && (
+            <DynamicTagFilter
+              id="en-blog-series-filter"
+              labels={seriesTags}
+              targetType="series"
+              maxVisible={8}
+            />
+          )}
+          <div class="series-list" id="en-blog-series-list">
+            {sortedSeries.map(series => (
+              <div class="content-item"
+                   data-content-type="series"
+                   data-tags={(series.data.tags || []).join(',')}
+                   data-date={series.data.date?.toISOString()}>
+                <SeriesCard
+                  href={`/blog/series/${getContentSlug(series)}`}
+                  title={series.data.title}
+                  description={series.data.description}
+                  cover={series.data.coverImage}
+                  tags={series.data.tags || []}
+                  itemCount={series.data.items.length}
+                  itemUnit={t.blog.articleCount}
+                />
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      <ContentCollection
+        items={standalonePosts}
+        type="posts"
+        title={t.blog.title}
+        emptyText={t.blog.empty}
+        basePath="/blog"
+        filterId="en-blog-posts-filter"
+        showSort={true}
+      />
+    </div>
+  </section>
+</Base>
+
+<style>
+  .page-header {
+    margin-bottom: var(--space-12);
+  }
+
+  .page-title {
+    font-size: var(--text-4xl);
+    font-weight: 700;
+    margin-bottom: var(--space-3);
+  }
+
+  .page-subtitle {
+    font-size: var(--text-lg);
+    color: var(--text-secondary);
+  }
+
+  .series-section {
+    margin-bottom: var(--space-12);
+  }
+
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-4);
+  }
+
+  .section-title {
+    font-size: var(--text-xl);
+    font-weight: 600;
+    margin: 0;
+    color: var(--text-primary);
+  }
+
+  .series-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+
+  .content-item.hidden {
+    display: none !important;
+  }
+</style>

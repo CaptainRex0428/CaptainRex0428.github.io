@@ -20,45 +20,20 @@
   },
   "about": {
     "title": "About Me",
-    "intro": "A frontend developer who loves computer graphics and real-time rendering.",
+    "intro": "Senior technical artist working on real-time rendering and engine development. I build the tools I need: a C++20 / DirectX 11 scene engine and editor, plus a set of technical-art helpers for Unreal Engine. Before that I did multimedia design for the National Centre for the Performing Arts, conceptual design for Baidu Xirang and the China Science Fiction Convention, and years of VFX compositing, editing and documentary directing. I now teach digital arts and digital technology, and co-authored two books on Unreal Engine development and virtual production.",
     "skills": "Skills",
     "skillsList": {
-      "frontend": "Frontend",
-      "3d": "3D / WebGL",
-      "tools": "Dev Tools",
-      "writing": "Technical Writing"
+      "gamedev": "Game Development",
+      "dcc": "DCC Tools",
+      "vfx": "VFX & Interactive",
+      "education": "Teaching & Publishing"
+    },
+    "skillsDetail": {
+      "gamedev": "DirectX / OpenGL development\nShader pipeline and API work\nC++ / C# / Python",
+      "dcc": "Blender / Houdini / Substance Designer / Substance Painter / ZBrush\nAI-assisted coding workflow research",
+      "vfx": "AE / DaVinci Resolve / Nuke\nVirtual production, motion capture, interactive installations",
+      "education": "Co-author of two Unreal Engine titles (development basics, virtual production)\n6 years teaching digital arts and digital technology"
     }
-  },
-  "works": {
-    "title": "Works",
-    "subtitle": "Personal projects and technical experiments",
-    "all": "All",
-    "empty": "No works yet",
-    "view": "View Details"
-  },
-  "blog": {
-    "title": "Blog",
-    "subtitle": "Technical articles and learning notes",
-    "all": "All",
-    "empty": "No articles yet",
-    "readMore": "Read More",
-    "series": "Series",
-    "seriesTitle": "Blog Series",
-    "seriesSubtitle": "Featured articles and collections",
-    "seriesEmpty": "No series yet",
-    "tags": "Tags",
-    "articleCount": "articles",
-    "worksCount": "works",
-    "noPostsInTag": "No articles found for this tag",
-    "noWorksInTag": "No works found for this tag",
-    "noPostsInCategory": "No articles found in this category",
-    "noWorksInCategory": "No works found in this category",
-    "foundInPosts": "Found",
-    "foundInWorks": "Found",
-    "postsWithTag": "articles",
-    "worksWithTag": "works",
-    "totalWithTag": "This tag has",
-    "totalContents": "contents"
   },
   "works": {
     "title": "Works",
@@ -71,6 +46,30 @@
     "seriesSubtitle": "Featured projects and collections",
     "seriesEmpty": "No series yet"
   },
+  "blog": {
+    "title": "Blog",
+    "subtitle": "Technical articles and learning notes",
+    "all": "All",
+    "empty": "No articles yet",
+    "readMore": "Read More",
+    "series": "Series",
+    "seriesTitle": "Blog Series",
+    "seriesSubtitle": "Featured articles and collections",
+    "seriesEmpty": "No series yet",
+    "tags": "Tags",
+    "articleCount": "posts",
+    "worksCount": "works",
+    "noPostsInTag": "No articles found for this tag",
+    "noWorksInTag": "No works found for this tag",
+    "noPostsInCategory": "No articles found in this category",
+    "noWorksInCategory": "No works found in this category",
+    "foundInPosts": "Found",
+    "foundInWorks": "Found",
+    "postsWithTag": "posts",
+    "worksWithTag": "works",
+    "totalWithTag": "This tag has",
+    "totalContents": "items"
+  },
   "footer": {
     "copyright": "All rights reserved",
     "madeWith": "Made with care"
@@ -82,7 +81,8 @@
     "zhihuName": "Turing Tech Notes",
     "xiaohongshuName": "Turing Digital Art",
     "xiaohongshuName2": "Turing Digital Art Tech",
-    "bilibiliName": "Turing Digital Art RestArt"
+    "bilibiliName": "Turing Digital Art RestArt",
+    "title": "Social"
   },
   "lang": {
     "switchToEn": "English",
@@ -99,5 +99,10 @@
   "sort": {
     "byTime": "By Date",
     "byName": "By Name"
+  },
+  "filter": {
+    "all": "All",
+    "more": "More tags",
+    "less": "Show less"
   }
 }

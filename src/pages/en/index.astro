@@ -1,10 +1,26 @@
 ---
 import Base from '../../layouts/Base.astro';
 import Card from '../../components/Card.astro';
+import { getCollection } from 'astro:content';
 import { useTranslations, getLocaleFromUrl } from '../../i18n';
+import { formatDateShort } from '@/utils/formatDate';
 
 const locale = getLocaleFromUrl(Astro.url);
 const t = useTranslations(locale);
+
+// 真实内容：最新博客 + 最新作品（英文站沿用中文正文，标题保持原文）
+const allPosts = await getCollection('blog', ({ data }) => data.published !== false);
+const latestPosts = allPosts
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
+  .slice(0, 2);
+
+const allWorks = await getCollection('works');
+const latestWorks = allWorks
+  .sort((a, b) => {
+    if (a.data.order !== b.data.order) return b.data.order - a.data.order;
+    return (b.data.date?.valueOf() || 0) - (a.data.date?.valueOf() || 0);
+  })
+  .slice(0, 3);
 ---
 
 <Base title={t.hero.title}>
@@ -15,6 +31,9 @@ const t = useTranslations(locale);
         <h1 class="hero-title">
           {t.hero.title} <span class="accent">CaptainRex</span>
         </h1>
+        <div class="hero-logo-container">
+          <img src="/rex.png" alt="CaptainRex" class="hero-logo" />
+        </div>
         <div class="hero-tags">
           {(Array.isArray(t.hero.subtitle) ? t.hero.subtitle : [t.hero.subtitle]).map((tag: string) => (
             <span class="hero-tag">{tag}</span>
@@ -42,24 +61,14 @@ const t = useTranslations(locale);
       </div>
 
       <div class="grid grid-3">
-        <Card
-          href="/en/works/frontend"
-          badge="frontend"
-          title="WebGL Particle System"
-          description="Interactive particle effects built with Three.js, supporting custom parameters and real-time rendering."
-        />
-        <Card
-          href="/en/works/3d"
-          badge="3d"
-          title="3D Product Showcase"
-          description="WebGL-based 3D product display with multi-angle viewing and material switching."
-        />
-        <Card
-          href="/en/works/design-tools"
-          badge="design-tools"
-          title="Design Tools Collection"
-          description="A set of tools for improving design efficiency, including color conversion and gradient generation."
-        />
+        {latestWorks.map((work) => (
+          <Card
+            href={`/works/${work.slug}`}
+            badge={work.data.category}
+            title={work.data.title}
+            description={work.data.description}
+          />
+        ))}
       </div>
     </div>
   </section>
@@ -73,20 +82,15 @@ const t = useTranslations(locale);
       </div>
 
       <div class="grid grid-2">
-        <Card
-          href="/en/blog/frontend"
-          badge="frontend"
-          title="Three.js Advanced: Performance Optimization"
-          description="Deep dive into Three.js performance bottlenecks and optimization strategies."
-          date="2026-01-15"
-        />
-        <Card
-          href="/en/blog/graphics"
-          badge="graphics"
-          title="WebGL Shaders: A Beginner's Guide"
-          description="Learn GLSL shader programming from scratch, understanding vertex and fragment shaders."
-          date="2026-01-08"
-        />
+        {latestPosts.map((post) => (
+          <Card
+            href={`/blog/${post.slug}`}
+            badge={post.data.category}
+            title={post.data.title}
+            description={post.data.description}
+            date={formatDateShort(post.data.date)}
+          />
+        ))}
       </div>
     </div>
   </section>
@@ -163,6 +167,42 @@ const t = useTranslations(locale);
 
   .hero-badge {
     margin-bottom: var(--space-4);
+  }
+
+
+  .hero-logo-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: var(--space-8);
+  }
+
+  .hero-logo {
+    height: 200px;
+    width: auto;
+    filter: drop-shadow(0 0 20px rgba(255, 140, 0, 0.3));
+  }
+
+  .accent {
+    color: var(--accent);
+  }
+
+
+  .hero-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin-bottom: var(--space-6);
+  }
+
+  .hero-tag {
+    padding: var(--space-1) var(--space-3);
+    font-size: var(--text-sm);
+    font-weight: 500;
+    color: var(--text-secondary);
+    background: transparent;
+    border: 1px solid var(--bg-border);
+    border-radius: var(--radius-md);
+    box-shadow: 0 0 8px rgba(74, 74, 74, 0.3);
   }
 
   .hero-title {

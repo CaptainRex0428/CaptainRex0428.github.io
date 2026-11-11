@@ -1,0 +1,213 @@
+---
+import Base from '@/layouts/Base.astro';
+import { useTranslations, getLocaleFromUrl } from '@/i18n';
+
+const locale = getLocaleFromUrl(Astro.url);
+const t = useTranslations(locale);
+---
+
+<Base title={t.about.title}>
+  <section class="about section">
+    <div class="about-background">
+      <img src="/myphoto.jpg" alt="" class="about-photo" loading="lazy" />
+    </div>
+    <div class="container">
+      <div class="about-header">
+        <h1 class="about-title">{t.about.title}</h1>
+        <p class="about-intro">{t.about.intro}</p>
+      </div>
+
+      <div class="about-grid">
+        <div class="about-card card">
+          <h2 class="card-title">{t.about.skills}</h2>
+          <div class="skills-grid">
+            <div class="skill-item">
+              <span class="skill-icon">🎮</span>
+              <h3>{t.about.skillsList.gamedev}</h3>
+              <p class="skill-detail">{t.about.skillsDetail.gamedev}</p>
+            </div>
+            <div class="skill-item">
+              <span class="skill-icon">🛠️</span>
+              <h3>{t.about.skillsList.dcc}</h3>
+              <p class="skill-detail">{t.about.skillsDetail.dcc}</p>
+            </div>
+            <div class="skill-item">
+              <span class="skill-icon">🎬</span>
+              <h3>{t.about.skillsList.vfx}</h3>
+              <p class="skill-detail">{t.about.skillsDetail.vfx}</p>
+            </div>
+            <div class="skill-item">
+              <span class="skill-icon">📚</span>
+              <h3>{t.about.skillsList.education}</h3>
+              <p class="skill-detail">{t.about.skillsDetail.education}</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="about-card card social-card">
+          <h2 class="card-title">{t.social.title}</h2>
+          <div class="social-buttons">
+            <div class="social-row">
+              <span class="social-label">{t.social.zhihu}</span>
+              <div class="social-btns">
+                <a href="https://www.zhihu.com/people/turing-digiart" target="_blank" rel="noopener" class="social-btn">
+                  <span>{t.social.zhihuName}</span>
+                </a>
+              </div>
+            </div>
+            <div class="social-row">
+              <span class="social-label">{t.social.xiaohongshu}</span>
+              <div class="social-btns">
+                <a href="https://www.xiaohongshu.com/user/profile/697ed5bd00000000210136e2" target="_blank" rel="noopener" class="social-btn">
+                  <span>{t.social.xiaohongshuName}</span>
+                </a>
+                <a href="https://www.xiaohongshu.com/user/profile/6709d2da000000001d03100c" target="_blank" rel="noopener" class="social-btn">
+                  <span>{t.social.xiaohongshuName2}</span>
+                </a>
+              </div>
+            </div>
+            <div class="social-row">
+              <span class="social-label">{t.social.bilibili}</span>
+              <div class="social-btns">
+                <a href="https://space.bilibili.com/504030884" target="_blank" rel="noopener" class="social-btn">
+                  <span>{t.social.bilibiliName}</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .about {
+    position: relative;
+    padding-top: var(--space-16);
+  }
+
+  .about-background {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  .about-photo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.08;
+    filter: blur(2px);
+  }
+
+  .about-header {
+    position: relative;
+    margin-bottom: var(--space-12);
+    max-width: 820px;
+  }
+
+  .about-title {
+    font-size: var(--text-4xl);
+    font-weight: 700;
+    margin-bottom: var(--space-4);
+  }
+
+  .about-intro {
+    font-size: var(--text-base);
+    line-height: 1.8;
+    color: var(--text-secondary);
+  }
+
+  .about-grid {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: var(--space-6);
+  }
+
+  .about-card {
+    padding: var(--space-6);
+  }
+
+  .card-title {
+    font-size: var(--text-xl);
+    font-weight: 600;
+    margin-bottom: var(--space-6);
+  }
+
+  .skills-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-5);
+  }
+
+  .skill-item h3 {
+    font-size: var(--text-base);
+    font-weight: 600;
+    margin: var(--space-2) 0;
+  }
+
+  .skill-icon {
+    font-size: 1.5rem;
+  }
+
+  .skill-detail {
+    font-size: var(--text-sm);
+    line-height: 1.7;
+    color: var(--text-secondary);
+    white-space: pre-line;
+  }
+
+  .social-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+
+  .social-row {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .social-label {
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+  }
+
+  .social-btns {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  .social-btn {
+    display: inline-flex;
+    align-items: center;
+    padding: var(--space-2) var(--space-4);
+    font-size: var(--text-sm);
+    color: var(--text-primary);
+    background: var(--bg-elevated);
+    border: 1px solid var(--bg-border);
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    transition: border-color var(--transition-fast), color var(--transition-fast);
+  }
+
+  .social-btn:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+
+  @media (max-width: 768px) {
+    .about-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .skills-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

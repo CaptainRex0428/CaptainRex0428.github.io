@@ -40,7 +40,11 @@
     "subtitle": "一些个人项目和技术实践",
     "all": "全部",
     "empty": "暂无作品",
-    "view": "查看详情"
+    "view": "查看详情",
+    "series": "合集",
+    "seriesTitle": "作品合集",
+    "seriesSubtitle": "系列作品和专题项目",
+    "seriesEmpty": "暂无合集"
   },
   "blog": {
     "title": "博客",
@@ -65,17 +69,6 @@
     "worksWithTag": "个作品",
     "totalWithTag": "该标签共",
     "totalContents": "个内容"
-  },
-  "works": {
-    "title": "作品集",
-    "subtitle": "一些个人项目和技术实践",
-    "all": "全部",
-    "empty": "暂无作品",
-    "view": "查看详情",
-    "series": "合集",
-    "seriesTitle": "作品合集",
-    "seriesSubtitle": "系列作品和专题项目",
-    "seriesEmpty": "暂无合集"
   },
   "footer": {
     "copyright": "版权所有",
@@ -105,5 +98,10 @@
   "sort": {
     "byTime": "按时间排序",
     "byName": "按名称排序"
+  },
+  "filter": {
+    "all": "全部",
+    "more": "更多标签",
+    "less": "收起"
   }
 }
