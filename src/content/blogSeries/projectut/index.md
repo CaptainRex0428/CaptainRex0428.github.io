@@ -5,5 +5,5 @@ coverImage: "/blog/series/projectut/cover.webp"
 items: ['projectut-00-index', 'projectut-01', 'projectut-02', 'projectut-03-sassetview']
 tags: ['ProjectUT', 'UE', '工具开发', '编辑器扩展']
 date: 2025-04-16
-order: 6
+order: 2
 ---

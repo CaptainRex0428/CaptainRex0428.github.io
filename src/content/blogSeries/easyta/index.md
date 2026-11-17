@@ -5,5 +5,5 @@ coverImage: "/blog/series/easyta/cover.webp"
 items: ['easyta-01-hdri', 'easyta-02-mask-sdf', 'easyta-03-redirector', 'easyta-04-easymath', 'easyta-05-swizzle', 'easyta-06-swizzle', 'easyta-07']
 tags: ['EasyTA', 'UE', '技术美术', '材质']
 date: 2025-07-25
-order: 5
+order: 4
 ---

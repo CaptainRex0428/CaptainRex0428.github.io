@@ -5,5 +5,5 @@ coverImage: "/blog/series/restarengine-devlog/banner.webp"
 items: ['restarengine-devlog-01', 'restarengine-devlog-02']
 tags: ['RestArtEngine', '引擎开发', '实时渲染', '编辑器']
 date: 2026-10-20
-order: 2
+order: 3
 ---
